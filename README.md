@@ -56,11 +56,11 @@ Each chapter has `test: { url: "", questions: [] }`. Either:
 - add multiple-choice questions (in Edit mode: open the 🏆 step → "+ Add question"); the pass mark is 70%; or
 - put a link to an external form in `url` (e.g. an online form).
 
-## Hosting (free, when you're ready)
+## Hosting (GitHub Pages, automatic)
 
-This repo isn't published yet. To host it free on GitHub Pages:
-1. Push this folder to GitHub.
-2. Go to **Settings → Pages**, set **Source = Deploy from a branch**, then pick `main` and `/ (root)`.
-3. The site appears at `https://<user>.github.io/cloudcore_training/`.
+The workflow `.github/workflows/deploy-pages.yml` publishes the site on **every push to `main`**. It also checks that `js/content.js` still loads, so a broken edit won't go live.
 
-⚠️ GitHub Pages sites on free accounts are **public**. The content mentions internal names, so decide whether that's OK first.
+One-time setup: **Settings → Pages → Source: "GitHub Actions"**.
+After that, every push goes live at `https://<user>.github.io/cloudcore_training/` within about a minute. You can follow each deploy in the **Actions** tab, and re-run one by hand there with "Run workflow".
+
+⚠️ GitHub Pages sites on free accounts are **public**.
