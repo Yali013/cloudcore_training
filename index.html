@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudCore Academy</title>
+  <meta name="description" content="Interactive onboarding for new CloudCore trainees: networking, Linux, Windows, storage, NetApp, SAN, hardware, virtualization and backups.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand"><span class="brand-cloud">☁️</span><span><b>CloudCore</b> Academy</span></a>
+    <nav class="topnav"><a href="#/" title="Map">🗺️ <span>Map</span></a><a href="#/arcade" title="Arcade">🎮 <span>Arcade</span></a><a href="#/glossary" title="Glossary">📚 <span>Glossary</span></a><a href="#/progress" title="My progress">📈 <span>My progress</span></a></nav>
+    <div class="tb-right">
+      <button class="tb-btn who-btn" id="whoBtn" type="button" title="Switch trainee"></button>
+      <span class="xp-pill" id="xpPill"></span>
+      <button class="tb-btn" id="soundBtn" type="button" aria-label="Toggle sound"></button>
+      <button class="tb-btn edit" id="editBtn" type="button"></button>
+    </div>
+  </header>
+
+  <div class="editbar" id="editbar" hidden>
+    <span>🛠️ <b>Edit mode</b> · <span id="editState"></span> To publish for everyone: Export → replace <code>js/content.js</code> in the repo.</span>
+    <span class="editbar-btns">
+      <button class="btn sm" style="--c:#59C059" id="exportBtn" type="button">⬇ Export content.js</button>
+      <button class="btn sm" style="--c:#5CB1D6" id="importBtn" type="button">⬆ Import</button>
+      <button class="btn sm" style="--c:#9966FF" id="jsonBtn" type="button">{ } Course JSON</button>
+      <button class="btn sm danger" id="discardBtn" type="button">↺ Discard my edits</button>
+      <button class="btn sm ghost" id="exitEdit" type="button">Exit</button>
+      <input type="file" id="importFile" accept=".js,.json" hidden>
+    </span>
+  </div>
+  <div class="local-banner" id="localBanner" hidden>✏️ You're viewing content with your local (unpublished) edits.</div>
+
+  <main id="app" class="wrap"></main>
+
+  <footer class="foot">
+    Made with ☁️ for the CloudCore team · Progress is saved per trainee in this browser ·
+    <input type="file" id="progFile" accept=".json" hidden>
+    <button type="button" id="resetBtn" class="linkbtn">Reset my progress</button>
+  </footer>
+
+  <div id="modal" class="modal" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/content.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

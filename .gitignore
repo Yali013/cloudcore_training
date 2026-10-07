@@ -1,0 +1,4 @@
+# source photos (extracted from the zip)
+_src/
+*.zip
+.claude/
