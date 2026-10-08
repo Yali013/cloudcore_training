@@ -1532,6 +1532,24 @@
     store.del(KEY_EDITS); hasEdits = false; course = clone(window.COURSE); ui.runs = {}; ui.act = {}; updateEditBar(); location.hash = '#/'; rerender();
   });
   $('#whoBtn').addEventListener('click', () => { location.hash = '#/who'; });
+
+  // light / dark: follows the system until the visitor picks; picking the system's own theme goes back to "follow system"
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => (document.documentElement.dataset.theme || (systemDark.matches ? 'dark' : 'light')) === 'dark';
+  function renderThemeBtn() {
+    const b = $('#themeBtn'); const dark = isDark();
+    b.textContent = dark ? '☀️' : '🌙';
+    b.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    b.setAttribute('aria-label', b.title);
+  }
+  $('#themeBtn').addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    if (next === (systemDark.matches ? 'dark' : 'light')) { delete document.documentElement.dataset.theme; try { localStorage.removeItem('cca_theme'); } catch (e) { /* storage unavailable */ } }
+    else { document.documentElement.dataset.theme = next; try { localStorage.setItem('cca_theme', next); } catch (e) { /* storage unavailable */ } }
+    renderThemeBtn(); requestAnimationFrame(drawPath);
+  });
+  systemDark.addEventListener('change', renderThemeBtn);
+  renderThemeBtn();
   $('#progFile').addEventListener('change', (e) => {
     const f = e.target.files[0]; if (!f) return;
     f.text().then(importProgress).catch((err) => alert('Import failed: ' + err.message));

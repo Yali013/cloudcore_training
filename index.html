@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <script>try { var t = localStorage.getItem('cca_theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
   <title>CloudCore Academy</title>
   <meta name="description" content="Interactive onboarding for new CloudCore trainees: networking, Linux, Windows, storage, NetApp, SAN, hardware, virtualization and backups.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>">
@@ -18,6 +20,7 @@
     <div class="tb-right">
       <button class="tb-btn who-btn" id="whoBtn" type="button" title="Switch trainee"></button>
       <span class="xp-pill" id="xpPill"></span>
+      <button class="tb-btn" id="themeBtn" type="button"></button>
       <button class="tb-btn" id="soundBtn" type="button" aria-label="Toggle sound"></button>
       <button class="tb-btn edit" id="editBtn" type="button"></button>
     </div>
