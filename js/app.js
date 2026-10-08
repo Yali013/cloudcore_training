@@ -49,7 +49,10 @@
     selectProfile(id); return id;
   }
   const AVATARS = ['🦊', '🐼', '🐙', '🦉', '🐢', '🐧', '🦄', '🐝', '🐬', '🦁', '🐸', '🐨'];
-  const avatar = (name) => AVATARS[[...String(name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % AVATARS.length];
+  // the trainee's chosen avatar, or one derived from their name until they pick
+  const avatar = (p) => (p && p.avatar) || AVATARS[[...String(p ? p.name : '')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % AVATARS.length];
+  const AVATAR_CHOICES = ['🦊', '🐼', '🐙', '🦉', '🐢', '🐧', '🦄', '🐝', '🐬', '🦁', '🐸', '🐨', '🐯', '🐻', '🐰', '🐶', '🐱', '🐵', '🦖', '🐳', '🦋', '🐞', '🦜', '🦩', '🐲', '🦔', '🐿️', '🦦', '🐹', '🦭',
+    '🤖', '👾', '🧙', '🦸', '🥷', '🧑‍💻', '👩‍🚀', '🕵️', '🧑‍🔧', '🧑‍🔬', '☁️', '⚡', '🔥', '🌈', '🚀', '🛸', '💾', '🖥️', '🔌', '🧠', '🎮', '🎯', '🏆', '💎', '🍕', '☕', '🌵', '🍀', '⭐', '🌙'];
   const fmtDate = (t) => (t ? new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
   let saveTimer;
   const saveCourseNow = () => { clearTimeout(saveTimer); store.set(KEY_EDITS, course); hasEdits = true; updateEditBar(); };
@@ -182,7 +185,7 @@
   // ---------- topbar / editbar ----------
   function renderTopbar() {
     const p = me();
-    $('#whoBtn').innerHTML = p ? `<span class="av">${avatar(p.name)}</span> ${esc(p.name)}` : '👤 Who are you?';
+    $('#whoBtn').innerHTML = p ? `<span class="av">${avatar(p)}</span> ${esc(p.name)}` : '👤 Who are you?';
     $('#xpPill').hidden = !p;
     const li = levelInfo();
     $('#xpPill').innerHTML = `<b>Lv ${li.lvl}</b> ${esc(li.title)} · ⭐ ${P.xp} XP<span class="xp-mini"><i style="width:${(li.into / XP_PER_LEVEL) * 100}%"></i></span>`;
@@ -1037,21 +1040,28 @@
   // ---------- ARCADE: every mini-game in one place ----------
   function renderArcade() {
     cur = null;
-    let total = 0; let done = 0;
+    const f = ui.arcade || (ui.arcade = { type: '', status: '' });
+    const all = [];
+    course.chapters.forEach((ch) => {
+      const steps = realSteps(ch);
+      (ch.activities || []).forEach((a, i) => all.push({ ch, a, key: `${ch.id}|act|${i}`, step: steps.findIndex((s) => s.type === 'act' && s.i === i) }));
+      (ch.labs || []).forEach((l, li) => (l.activities || []).forEach((a, ai) => all.push({ ch, a, key: `${ch.id}|lab${li}|${ai}`, step: steps.findIndex((s) => s.type === 'lab' && s.i === li) })));
+    });
+    const done = all.filter((g) => P.act[g.key]).length;
+    const kinds = [...new Set(all.map((g) => g.a.type))];
+    const shown = all.filter((g) => (!f.type || g.a.type === f.type) && (!f.status || (f.status === 'done') === !!P.act[g.key]));
     const blocks = course.chapters.map((ch) => {
-      const steps = realSteps(ch); const games = [];
-      (ch.activities || []).forEach((a, i) => games.push({ a, key: `${ch.id}|act|${i}`, step: steps.findIndex((s) => s.type === 'act' && s.i === i) }));
-      (ch.labs || []).forEach((l, li) => (l.activities || []).forEach((a, ai) => games.push({ a, key: `${ch.id}|lab${li}|${ai}`, step: steps.findIndex((s) => s.type === 'lab' && s.i === li) })));
-      if (!games.length) return '';
-      total += games.length; done += games.filter((g) => P.act[g.key]).length;
+      const games = shown.filter((g) => g.ch === ch); if (!games.length) return '';
       return `<section class="arc-ch" style="--c:${esc(ch.color)}"><h2>${esc(ch.icon)} ${esc(ch.title)}</h2><div class="arc-grid">${games.map((g) => {
         const T = GAME_TYPES[g.a.type] || ['🎮', g.a.type];
         return `<a class="arc-game ${P.act[g.key] ? 'done' : ''}" href="#/c/${esc(ch.id)}/${g.step}"><span class="arc-ico">${T[0]}</span><span><b dir="auto">${esc(g.a.title)}</b><small>${esc(T[1])}${P.act[g.key] ? ' · ✔ done' : ''}</small></span></a>`;
       }).join('')}</div></section>`;
     }).join('');
-    const kinds = [...new Set(course.chapters.flatMap((c) => (c.activities || []).concat(...(c.labs || []).map((l) => l.activities || [])).map((a) => a.type)))];
-    app.innerHTML = `<div class="arcade"><div class="g-head">${MASCOT}<div><h1>🎮 Arcade</h1><p class="lead">${total} games, ${kinds.length} kinds. You've beaten ${done}. Every game also lives inside its chapter.</p></div></div>
-      <div class="chips">${kinds.map((t) => { const T = GAME_TYPES[t] || ['🎮', t]; return `<span class="chip">${T[0]} ${esc(T[1])}</span>`; }).join('')}</div>${blocks}</div>`;
+    const chip = (act, val, cur, label, n) => `<button type="button" class="chip ${cur === val ? 'on' : ''}" data-act="${act}" data-v="${esc(val)}" aria-pressed="${cur === val}">${label}${n != null ? ` <span class="chip-n">${n}</span>` : ''}</button>`;
+    app.innerHTML = `<div class="arcade"><div class="g-head">${MASCOT}<div><h1>🎮 Arcade</h1><p class="lead">${all.length} games, ${kinds.length} kinds. You've beaten ${done}. Every game also lives inside its chapter.</p></div></div>
+      <div class="chips filter" aria-label="Filter by status">${chip('arcStatus', '', f.status, 'All')}${chip('arcStatus', 'todo', f.status, '🎯 To play', all.length - done)}${chip('arcStatus', 'done', f.status, '✔ Done', done)}</div>
+      <div class="chips filter" aria-label="Filter by game type">${chip('arcType', '', f.type, '🎮 All types', all.length)}${kinds.map((t) => { const T = GAME_TYPES[t] || ['🎮', t]; return chip('arcType', t, f.type, `${T[0]} ${esc(T[1])}`, all.filter((g) => g.a.type === t).length); }).join('')}</div>
+      ${blocks || `<div class="empty">No games match these filters. ${f.status === 'todo' ? 'You beat them all! 🏆' : ''}</div>`}</div>`;
   }
 
   // ---------- TRAINEES ----------
@@ -1060,10 +1070,10 @@
     const cards = profiles.list.slice().sort((a, b) => (b.last || 0) - (a.last || 0)).map((p) => {
       const prog = loadProgress(p.id); const lvl = Math.floor(prog.xp / XP_PER_LEVEL) + 1;
       return `<div class="who-card ${p.id === profiles.current ? 'on' : ''}">
-        <button class="who-pick" data-act="whoPick" data-id="${esc(p.id)}"><span class="who-av">${avatar(p.name)}</span>
+        <button class="who-pick" data-act="whoPick" data-id="${esc(p.id)}"><span class="who-av">${avatar(p)}</span>
           <b>${esc(p.name)}</b><small>Lv ${lvl} · ⭐ ${prog.xp} XP · ${overallPct(prog)}% done</small>
           <span class="mini-bar"><i style="width:${overallPct(prog)}%"></i></span><small class="muted">Last active ${fmtDate(p.last)}</small></button>
-        <div class="who-tools"><button class="icon-btn" data-act="whoRename" data-id="${esc(p.id)}" title="Rename">✏️</button><button class="icon-btn danger" data-act="whoDel" data-id="${esc(p.id)}" title="Delete trainee">🗑</button></div>
+        <div class="who-tools"><button class="icon-btn" data-act="whoAvatar" data-id="${esc(p.id)}" title="Change avatar">🎨</button><button class="icon-btn" data-act="whoRename" data-id="${esc(p.id)}" title="Rename">✏️</button><button class="icon-btn danger" data-act="whoDel" data-id="${esc(p.id)}" title="Delete trainee">🗑</button></div>
       </div>`;
     }).join('');
     app.innerHTML = `<div class="who">
@@ -1100,7 +1110,7 @@
         <td>${games.length ? `${gamesDone}/${games.length}` : '—'}</td><td>${labs.length ? `${labsDone}/${labs.length}` : '—'}</td><td>${test}</td></tr>`;
     }).join('');
     app.innerHTML = `<div class="progress-page">
-      <div class="p-head"><span class="who-av big">${avatar(p.name)}</span>
+      <div class="p-head"><button type="button" class="who-av big av-edit" data-act="whoAvatar" data-id="${esc(p.id)}" title="Change avatar">${avatar(p)}<span class="av-pen">✏️</span></button>
         <div><h1>${esc(p.name)}</h1><p class="lead">Lv ${li.lvl} · ${esc(li.title)} · ⭐ ${P.xp} XP · Started ${fmtDate(p.created)} · Last active ${fmtDate(p.last)}</p></div>
         <div class="row"><button class="btn sm" style="--c:#59C059" data-act="progExport">⬇ Export my progress</button><button class="btn sm ghost" data-act="progImport">⬆ Import</button><a class="btn sm ghost" href="#/who">🔄 Switch trainee</a></div></div>
       <div class="stats five">
@@ -1128,6 +1138,7 @@
     if (p && !confirm(`Replace the progress of “${p.name}” on this computer with the imported file?`)) return;
     if (!p) { p = { id: d.profile.id || 't' + Date.now().toString(36), name: d.profile.name || 'Imported trainee', created: d.profile.created || Date.now() }; profiles.list.push(p); }
     p.last = d.profile.last || Date.now();
+    if (d.profile.avatar) p.avatar = d.profile.avatar;
     store.set(progKey(p.id), Object.assign(emptyProgress(), d.progress));
     selectProfile(p.id); toast(`✔ Imported progress for ${p.name}`, 2400);
     location.hash = '#/progress'; rerender();
@@ -1322,6 +1333,9 @@
       }
       // trainees
       case 'whoPick': selectProfile(el.dataset.id); location.hash = '#/'; rerender(); break;
+      case 'arcType': ui.arcade.type = el.dataset.v; rerender(); break;
+      case 'arcStatus': ui.arcade.status = el.dataset.v; rerender(); break;
+      case 'whoAvatar': openAvatarPicker(el.dataset.id); break;
       case 'whoRename': {
         const p = profiles.list.find((x) => x.id === el.dataset.id);
         const name = prompt('New name:', p.name); if (name && name.trim()) { p.name = name.trim(); saveProfiles(); renderTopbar(); rerender(); }
@@ -1433,6 +1447,16 @@
   function openModal(html) { const m = $('#modal'); m.innerHTML = `<div class="modal-card">${html}</div>`; m.hidden = false; return m; }
   function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; }
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal' || e.target.closest('[data-close]')) closeModal(); });
+  function openAvatarPicker(id) {
+    const p = profiles.list.find((x) => x.id === id); if (!p) return;
+    const m = openModal(`<h2>🎨 Pick an avatar for ${esc(p.name)}</h2>
+      <div class="av-grid">${AVATAR_CHOICES.map((a) => `<button type="button" class="av-choice ${avatar(p) === a ? 'on' : ''}" data-av="${a}" aria-label="Avatar ${a}">${a}</button>`).join('')}</div>
+      <div class="row end">${p.avatar ? '<button class="btn ghost" data-av="">↺ Back to automatic</button>' : ''}<button class="btn ghost" data-close>Cancel</button></div>`);
+    m.querySelectorAll('[data-av]').forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.av) p.avatar = b.dataset.av; else delete p.avatar;
+      saveProfiles(); closeModal(); renderTopbar(); rerender(); toast(`${avatar(p)} Looking good, ${p.name}!`);
+    }));
+  }
   function openJson(title, obj, apply) {
     const m = openModal(`<h2>{ } ${esc(title)}</h2><p class="hint">Advanced: edit the raw data. Keep the JSON valid (double quotes, no trailing commas).</p>
       <textarea id="jsonText" spellcheck="false">${esc(JSON.stringify(obj, null, 2))}</textarea><p id="jsonErr" class="err"></p>
