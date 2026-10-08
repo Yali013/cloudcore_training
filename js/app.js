@@ -395,7 +395,8 @@
   function quizRun(ch, key, qs, kind, secIdx) {
     if (!qs || !qs.length) return '<div class="empty">No questions yet.</div>';
     let r = ui.runs[key];
-    if (!r || r.n !== qs.length) r = ui.runs[key] = { idx: 0, ans: [], n: qs.length, finished: false, gained: 0 };
+    // each attempt shows the options in a fresh random order (answers are stored by original index)
+    if (!r || r.n !== qs.length) r = ui.runs[key] = { idx: 0, ans: [], n: qs.length, finished: false, gained: 0, perm: qs.map((q) => shuffle(q.o.map((_, i) => i))) };
     const pass = kind === 'test' ? 70 : 60;
     const dots = qs.map((_, k) => `<i class="${r.ans[k] == null ? '' : (r.ans[k] === qs[k].a ? 'ok' : 'bad')} ${k === r.idx && !r.finished ? 'cur' : ''}"></i>`).join('');
     const title = kind === 'test' ? '🏆 Chapter test' : '❓ Mini quiz: ' + esc(ch.sections[secIdx].title);
@@ -414,10 +415,11 @@
         </div></div>`;
     }
     const q = qs[r.idx]; const a = r.ans[r.idx]; const answered = a != null;
-    const opts = q.o.map((o, k) => {
+    const perm = (r.perm && r.perm[r.idx] && r.perm[r.idx].length === q.o.length) ? r.perm[r.idx] : q.o.map((_, i) => i);
+    const opts = perm.map((k, pos) => {
       let cls = '';
       if (answered) cls = k === q.a ? 'correct' : (k === a ? 'wrong' : 'dim');
-      return `<button class="opt ${cls}" data-act="answer" data-k="${esc(key)}" data-o="${k}" ${answered ? 'disabled' : ''}><span class="opt-key">${String.fromCharCode(65 + k)}</span><span dir="auto">${fmt(o)}</span></button>`;
+      return `<button class="opt ${cls}" data-act="answer" data-k="${esc(key)}" data-o="${k}" ${answered ? 'disabled' : ''}><span class="opt-key">${String.fromCharCode(65 + pos)}</span><span dir="auto">${fmt(q.o[k])}</span></button>`;
     }).join('');
     const ok = a === q.a;
     return `<div class="quiz" data-quiz="${esc(key)}"><h2>${title}</h2><div class="q-dots">${dots}</div>
@@ -654,13 +656,13 @@
 
   // fill the gap
   function fillAct(a, key) {
-    const s = ui.act[key] || (ui.act[key] = { i: 0, fails: 0 });
-    const k = esc(key); const n = a.items.length;
+    const s = ui.act[key] || (ui.act[key] = { i: 0, fails: 0, order: shuffle(a.items.map((_, i) => i)) });
+    const k = esc(key); const n = a.items.length; const items = s.order.map((i) => a.items[i]);
     const fill = (q, w) => esc(q).replace('___', `<b class="fill-word">${esc(w)}</b>`);
-    const done = a.items.slice(0, s.i).map((it) => `<div class="fill-row ok" dir="auto">✔ ${fill(it.q, it.a[0])}</div>`).join('');
+    const done = items.slice(0, s.i).map((it) => `<div class="fill-row ok" dir="auto">✔ ${fill(it.q, it.a[0])}</div>`).join('');
     let live = `<div class="fill-row win">🏆 All gaps filled. Nice!</div>`;
     if (s.i < n) {
-      const it = a.items[s.i]; const [before, after] = it.q.split('___');
+      const it = items[s.i]; const [before, after] = it.q.split('___');
       live = `<div class="fill-row cur ${s.fails ? 'is-bad' : ''}" dir="auto">${esc(before)}<input class="fill-in focusable" data-k="${k}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Missing word" size="${Math.max(6, it.a[0].length + 2)}">${esc(after || '')}</div>
         <div class="row end">${s.fails >= 2 ? `<span class="muted small">💡 Answer: <code>${esc(it.a[0])}</code></span>` : s.fails ? '<span class="muted small">Not quite. Try again!</span>' : ''}
         <button class="btn" style="--c:#59C059" data-act="fillCheck" data-k="${k}">Check ✔</button></div>`;
@@ -669,7 +671,7 @@
   }
   function fillSubmit(key, val) {
     const s = ui.act[key]; const a = ui.meta[key].a; if (!s || s.i >= a.items.length || !val.trim()) return;
-    if (a.items[s.i].a.some((x) => norm(x) === norm(val))) {
+    if (a.items[s.order[s.i]].a.some((x) => norm(x) === norm(val))) {
       s.i++; s.fails = 0; beep(true);
       if (s.i >= a.items.length) { ui.focusTerm = null; completeAct(key); return; }
     } else { s.fails++; beep(false); }
@@ -865,7 +867,7 @@
 
   // pinpoint: reveal clues one by one, guess the term
   function ppAct(a, key) {
-    const s = ui.act[key] || (ui.act[key] = { p: 0, shown: 1, wrong: [], state: 'play', results: [] });
+    const s = ui.act[key] || (ui.act[key] = { p: 0, shown: 1, wrong: [], state: 'play', results: [], order: shuffle(a.puzzles.map((_, i) => i)) });
     const k = esc(key); const n = a.puzzles.length;
     if (s.p >= n) {
       const solved = s.results.filter((r) => r !== 'x');
@@ -873,7 +875,7 @@
         <p>${s.results.map((r, i) => `Puzzle ${i + 1}: ${r === 'x' ? '❌' : `✅ in ${r} clue${r === 1 ? '' : 's'}`}`).join(' · ')}</p>
         <button class="btn ghost" data-act="actReset" data-k="${k}">↻ Play again</button></div>`;
     }
-    const pz = a.puzzles[s.p];
+    const pz = a.puzzles[s.order[s.p]];
     const clues = pz.clues.map((c, i) => i < s.shown || s.state !== 'play'
       ? `<div class="pp-clue on" style="--d:${i * 60}ms"><span>${i + 1}</span><b dir="auto">${esc(c)}</b></div>`
       : `<div class="pp-clue"><span>${i + 1}</span><i>🔒 Clue ${i + 1}</i></div>`).join('');
@@ -887,7 +889,7 @@
   }
   function ppGuess(key, val) {
     const s = ui.act[key]; const a = ui.meta[key].a; if (!s || s.state !== 'play' || !val.trim()) return;
-    const pz = a.puzzles[s.p]; const g = norm(val).replace(/^the /, '');
+    const pz = a.puzzles[s.order[s.p]]; const g = norm(val).replace(/^the /, '');
     if (pz.answers.some((x) => norm(x) === g)) { s.state = 'solved'; s.results[s.p] = s.shown; beep(true); confetti(40); ui.focusTerm = null; }
     else {
       s.wrong.push(val.trim()); beep(false);
@@ -899,9 +901,9 @@
 
   // pick
   function pickAct(a, key) {
-    const s = ui.act[key] || (ui.act[key] = { sel: {}, checked: false });
+    const s = ui.act[key] || (ui.act[key] = { sel: {}, checked: false, order: shuffle(a.items.map((_, i) => i)) });
     const k = esc(key);
-    const items = a.items.map((it, i) => {
+    const items = s.order.map((i) => { const it = a.items[i];
       let cls = s.sel[i] ? 'on' : '';
       if (s.checked) cls += it.ok && s.sel[i] ? ' ok' : !it.ok && s.sel[i] ? ' bad' : it.ok ? ' missed' : '';
       return `<button class="pick ${cls}" data-act="pickToggle" data-k="${k}" data-i="${i}" dir="auto"><span class="box">${s.sel[i] ? '✔' : ''}</span>${esc(it.text)}</button>`;
@@ -1359,7 +1361,7 @@
     }
     const q = app.querySelector('[data-quiz]'); if (!q) return;
     const key = q.dataset.quiz;
-    if (/^[1-9]$/.test(e.key)) { const b = q.querySelectorAll('.opt')[Number(e.key) - 1]; if (b && !b.disabled) answer(key, Number(e.key) - 1); }
+    if (/^[1-9]$/.test(e.key)) { const b = q.querySelectorAll('.opt')[Number(e.key) - 1]; if (b && !b.disabled) answer(key, Number(b.dataset.o)); }
     else if (e.key === 'Enter') { const n = q.querySelector('[data-act="qNext"]'); if (n) quizNext(key); }
   });
   // drag & drop for sort games
