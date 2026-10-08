@@ -213,8 +213,8 @@
     if (parts[0] === 'arcade') return renderArcade();
     renderHome();
   }
-  function rerender() { const y = window.scrollY; route(); window.scrollTo(0, y); }
-  window.addEventListener('hashchange', () => { stopBlitz(); ui.focusTerm = null; route(); window.scrollTo(0, 0); });
+  function rerender() { const y = window.scrollY; app.classList.add('no-anim'); route(); window.scrollTo(0, y); }
+  window.addEventListener('hashchange', () => { stopBlitz(); ui.focusTerm = null; app.classList.remove('no-anim'); route(); window.scrollTo(0, 0); });
 
   // ---------- HOME / MAP ----------
   function renderHome() {
@@ -833,9 +833,9 @@
     const rows = [];
     for (let r = 0; r < 6; r++) {
       const g = s.guesses[r]; const sc = g ? wdScore(g, word) : null; const typing = !g && r === s.guesses.length && !s.over;
-      rows.push(`<div class="wd-row">${Array.from({ length: L }, (_, i) => {
+      rows.push(`<div class="wd-row ${r === s.fresh ? 'fresh' : ''}">${Array.from({ length: L }, (_, i) => {
         const ch = g ? g[i] : typing ? (s.cur[i] || '') : '';
-        return `<span class="wd-cell ${sc ? 'c-' + sc[i] : ch ? 'filled' : ''}" style="--d:${i * 90}ms">${ch}</span>`;
+        return `<span class="wd-cell ${sc ? 'c-' + sc[i] : ch ? 'filled' : ''} ${typing && i === s.cur.length - 1 && s.typed ? 'new' : ''}" style="--d:${i * 90}ms">${ch}</span>`;
       }).join('')}</div>`);
     }
     const keyState = {};
@@ -858,10 +858,11 @@
     if (c === '⌫') s.cur = s.cur.slice(0, -1);
     else if (c === '↵') {
       if (s.cur.length < word.length) { toast('Not enough letters'); return; }
-      s.guesses.push(s.cur); s.cur = '';
+      s.guesses.push(s.cur); s.cur = ''; s.fresh = s.guesses.length - 1; s.typed = false;
       if (s.guesses[s.guesses.length - 1] === word) { s.won = true; s.wins++; beep(true); completeAct(key); return; }
       if (s.guesses.length >= 6) { s.over = true; beep(false); }
-    } else if (/^[A-Z]$/.test(c) && s.cur.length < word.length) s.cur += c;
+    } else if (/^[A-Z]$/.test(c) && s.cur.length < word.length) { s.cur += c; s.typed = true; s.fresh = -1; }
+    if (c === '⌫') { s.typed = false; s.fresh = -1; }
     rerender();
   }
 
@@ -1279,7 +1280,7 @@
       case 'cnShuffle': ui.act[k].order = shuffle(ui.act[k].order); rerender(); break;
       case 'cnClear': ui.act[k].sel = []; rerender(); break;
       case 'cnSubmit': cnSubmit(k); break;
-      case 'wdKey': wdKey(k, el.dataset.key); break;
+      case 'wdKey': el.blur(); wdKey(k, el.dataset.key); break;
       case 'wdHint': ui.act[k].hint = true; rerender(); break;
       case 'wdNext': { const s = ui.act[k]; Object.assign(s, wdNew(ui.meta[k].a, s.wi)); rerender(); break; }
       case 'ppGuess': { const inp = el.closest('.activity').querySelector('.pp-in'); if (inp) ppGuess(k, inp.value); break; }

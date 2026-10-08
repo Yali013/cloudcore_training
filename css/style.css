@@ -156,6 +156,8 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; backgrou
 .step-caption { font-size: .9rem; color: var(--muted); margin: 2px 4px 14px; }
 .step-caption b { color: var(--ink); }
 .stage { background: #fff; border: 3px solid var(--line); border-radius: 24px; padding: 24px; box-shadow: var(--shadow); min-height: 300px; animation: slideIn .25s ease-out; }
+/* in-place updates (typing, answering) keep entrance animations from replaying, so the page doesn't look like it reloads */
+.no-anim .stage, .no-anim .card, .no-anim .ord-step { animation: none; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .stage-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .stage-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
@@ -357,8 +359,10 @@ button.perm-bit { cursor: pointer; box-shadow: 0 3px 0 #D3DDF0; }
 .wd-board { display: grid; gap: 6px; justify-content: center; margin: 14px 0; }
 .wd-row { display: grid; grid-template-columns: repeat(var(--L), minmax(0, 54px)); gap: 6px; }
 .wd-cell { aspect-ratio: 1; display: grid; place-items: center; border: 3px solid #D3D6DA; border-radius: 8px; font-family: var(--head); font-weight: 700; font-size: clamp(1rem, 4vw, 1.7rem); text-transform: uppercase; background: #fff; }
-.wd-cell.filled { border-color: #878A8C; animation: pop .12s; }
-.wd-cell.c-g, .wd-cell.c-y, .wd-cell.c-b { color: #fff; animation: flipIn .5s both; animation-delay: var(--d); }
+.wd-cell.filled { border-color: #878A8C; }
+.wd-cell.new { animation: pop .12s; }
+.wd-cell.c-g, .wd-cell.c-y, .wd-cell.c-b { color: #fff; }
+.wd-row.fresh .wd-cell { animation: flipIn .5s both; animation-delay: var(--d); }
 .wd-cell.c-g, .kb-key.c-g { background: #6AAA64; border-color: #6AAA64; color: #fff; }
 .wd-cell.c-y, .kb-key.c-y { background: #C9B458; border-color: #C9B458; color: #fff; }
 .wd-cell.c-b, .kb-key.c-b { background: #787C7E; border-color: #787C7E; color: #fff; }
