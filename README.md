@@ -7,7 +7,7 @@ It's pure HTML/CSS/JS: no build step and no server needed.
 
 Each chapter has:
 - 📖 **Term flip-cards** per subsection (≈440 terms in total)
-- ❓ **Mini quiz** after every subsection, with instant feedback, XP and stars
+- ❓ **Mini quiz** after every subsection, with instant feedback, XP and stars. Answers are shuffled every attempt, and each subsection has a pool of **extra questions** used only after a failed attempt, so retries show new questions (editable in Edit mode)
 - 🎮 **90 mini-games of 15 kinds**, all collected on the **Arcade** page:
   - Puzzle-style: 🟪 Connections (find 4 groups of 4), 🟩 Word Guess (6 tries), 📍 Pinpoint (guess the term from clues)
   - Quick-fire: ⚡ Term Blitz (60-second speed round built from each chapter's terms), ⚖️ True/False with lives

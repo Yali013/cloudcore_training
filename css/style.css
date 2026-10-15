@@ -218,7 +218,9 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; backgrou
 .q-dots i.cur { background: var(--c); }
 .q-dots i.ok { background: var(--green); }
 .q-dots i.bad { background: var(--red); }
-.q-card { border: 3px solid var(--line); border-radius: 22px; padding: 22px; background: var(--soft); transition: border-color .2s; }
+.bonus-tag { display: inline-block; margin: 0 0 6px; padding: 4px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600; background: var(--warn-bg); border: 2px solid var(--warn-line); color: var(--warn-ink); }
+.edit-sep { border: 0; border-top: 3px dashed var(--line); margin: 26px 0 18px; }
+.q-card {border: 3px solid var(--line); border-radius: 22px; padding: 22px; background: var(--soft); transition: border-color .2s; }
 .q-card.is-ok { border-color: var(--green); }
 .q-card.is-bad { border-color: var(--bad-line); }
 .q-card h3 { font-size: 1.3rem; }
@@ -397,6 +399,12 @@ button.perm-bit { cursor: pointer; box-shadow: 0 3px 0 var(--shl); }
 .kb-key.wide { flex: 1.6; font-size: .78rem; }
 .wd-msg { text-align: center; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
 .wd-msg.ok { background: var(--ok-bg); } .wd-msg.bad { background: var(--warn-bg); }
+
+.wd-slots { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.wd-slot { font-family: var(--head); font-weight: 700; letter-spacing: 2px; font-size: .85rem; padding: 4px 10px; border-radius: 999px; background: var(--soft2); border: 2px solid var(--line); color: var(--muted); }
+.wd-slot.ok { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-ink); letter-spacing: .5px; }
+.wd-slot.cur { border-color: var(--c); color: var(--ink); }
+.wd-msg.big { font-family: var(--head); font-size: 1.3rem; padding: 18px; margin: 10px 0; }
 
 /* pinpoint */
 .pp-clues { display: grid; gap: 8px; margin: 12px 0; }

@@ -24,7 +24,7 @@
   const progKey = (id) => 'cca_progress_' + id;
   let course = store.get(KEY_EDITS) || clone(window.COURSE);
   let hasEdits = !!store.get(KEY_EDITS);
-  const emptyProgress = () => ({ xp: 0, flip: {}, qa: {}, quiz: {}, act: {}, lab: {}, labxp: {}, checks: {}, test: {}, blitz: {}, sound: false });
+  const emptyProgress = () => ({ xp: 0, flip: {}, qa: {}, quiz: {}, quizFailed: {}, retryUsed: {}, act: {}, lab: {}, labxp: {}, checks: {}, test: {}, blitz: {}, wg: {}, sound: false });
   // Trainee profiles: no auth, just a name per person, each with its own progress in this browser.
   const profiles = Object.assign({ current: null, list: [] }, store.get(KEY_PROFILES) || {});
   const saveProfiles = () => store.set(KEY_PROFILES, profiles);
@@ -339,7 +339,9 @@
   function renderStep(ch, st) {
     switch (st.type) {
       case 'learn': return editMode ? learnEdit(ch, st.i) : learnStep(ch, st.i);
-      case 'quiz': return editMode ? quizEdit(ch, `sections.${st.i}.quiz`, 'Mini quiz') : quizRun(ch, `${ch.id}|${st.i}`, ch.sections[st.i].quiz, 'quiz', st.i);
+      case 'quiz': return editMode
+        ? quizEdit(ch, `sections.${st.i}.quiz`, 'Mini quiz') + '<hr class="edit-sep">' + quizEdit(ch, `sections.${st.i}.retry`, 'Extra questions', 'Used only after a trainee fails this quiz, so a retry shows new questions. Add at least as many as the quiz has.')
+        : quizRun(ch, `${ch.id}|${st.i}`, ch.sections[st.i].quiz, 'quiz', st.i);
       case 'act': return actStep(ch, st.i);
       case 'lab': return labStep(ch, st.i);
       default: return testStep(ch);
@@ -395,25 +397,49 @@
   }
 
   // ----- quiz engine (mini quizzes + chapter tests) -----
-  function quizRun(ch, key, qs, kind, secIdx) {
-    if (!qs || !qs.length) return '<div class="empty">No questions yet.</div>';
+  // Builds one attempt. After a failed mini quiz, the next attempt uses fresh questions from the
+  // subsection's retry pool (unseen ones first), so a trainee who fails doesn't see the same questions again.
+  function newRun(ch, key, qs, kind, secIdx) {
+    let list = qs.map((q, i) => ({ q, id: String(i) })); let bonus = false;
+    const pool = kind === 'quiz' ? (ch.sections[secIdx].retry || []) : [];
+    if (pool.length && P.quizFailed[key]) {
+      const used = P.retryUsed[key] || [];
+      const all = pool.map((_, i) => i);
+      const fresh = shuffle(all.filter((i) => !used.includes(i)));
+      if (fresh.length) {
+        // unseen extra questions first, topped up with older extras if the pool is smaller than the quiz
+        const pick = fresh.concat(shuffle(all.filter((i) => used.includes(i)))).slice(0, qs.length);
+        P.retryUsed[key] = [...new Set(used.concat(pick))];
+        list = pick.map((i) => ({ q: pool[i], id: 'r' + i })); bonus = true;
+      } else {
+        P.retryUsed[key] = []; // extras used up: this attempt uses the original questions, the next failure starts the extras again
+      }
+      saveP();
+    }
+    return { idx: 0, ans: [], n: qs.length, qs: list.map((x) => x.q), ids: list.map((x) => x.id), bonus, finished: false, gained: 0,
+      perm: list.map((x) => shuffle(x.q.o.map((_, i) => i))) }; // options in a fresh random order every attempt
+  }
+  function quizRun(ch, key, baseQs, kind, secIdx) {
+    if (!baseQs || !baseQs.length) return '<div class="empty">No questions yet.</div>';
     let r = ui.runs[key];
-    // each attempt shows the options in a fresh random order (answers are stored by original index)
-    if (!r || r.n !== qs.length) r = ui.runs[key] = { idx: 0, ans: [], n: qs.length, finished: false, gained: 0, perm: qs.map((q) => shuffle(q.o.map((_, i) => i))) };
+    if (!r || r.n !== baseQs.length) r = ui.runs[key] = newRun(ch, key, baseQs, kind, secIdx);
+    const qs = r.qs;
     const pass = kind === 'test' ? 70 : 60;
     const dots = qs.map((_, k) => `<i class="${r.ans[k] == null ? '' : (r.ans[k] === qs[k].a ? 'ok' : 'bad')} ${k === r.idx && !r.finished ? 'cur' : ''}"></i>`).join('');
     const title = kind === 'test' ? '🏆 Chapter test' : '❓ Mini quiz: ' + esc(ch.sections[secIdx].title);
+    const bonusTag = r.bonus ? '<div class="bonus-tag">🔁 Second chance: new questions on the same topic</div>' : '';
     if (r.finished) {
       const right = r.ans.filter((a, k) => a === qs[k].a).length; const pct = Math.round((right / qs.length) * 100);
       const stars = pct === 100 ? 3 : pct >= pass ? 2 : pct > 0 ? 1 : 0;
       const best = kind === 'test' ? P.test[ch.id] : P.quiz[key];
-      return `<div class="quiz"><h2>${title}</h2><div class="q-dots">${dots}</div>
+      const freshNext = kind === 'quiz' && pct < pass && (ch.sections[secIdx].retry || []).length;
+      return `<div class="quiz"><h2>${title}</h2>${bonusTag}<div class="q-dots">${dots}</div>
         <div class="q-card result">
           <div class="stars">${[0, 1, 2].map((s) => `<span class="${s < stars ? 'on' : ''}" style="--d:${s * 150}ms">★</span>`).join('')}</div>
           <h3>${right} / ${qs.length} correct · ${pct}%</h3>
-          <p>${pct === 100 ? 'Perfect score! You\'re on fire 🔥' : pct >= pass ? 'Passed! Nice work 👏' : `You need ${pass}% to pass. Have another look at the cards and try again 💪`}</p>
+          <p>${pct === 100 ? 'Perfect score! You\'re on fire 🔥' : pct >= pass ? 'Passed! Nice work 👏' : `You need ${pass}% to pass. Review the cards, research what you missed, and try again 💪`}</p>
           <p class="muted">Best: ${best || 0}%${r.gained ? ` · +${r.gained} XP this round` : ''}</p>
-          <div class="row center"><button class="btn ghost" data-act="qRetry" data-k="${esc(key)}">↻ Try again</button>
+          <div class="row center"><button class="btn ${freshNext ? '' : 'ghost'}" data-act="qRetry" data-k="${esc(key)}">${freshNext ? '🔁 Try again with new questions' : '↻ Try again'}</button>
           ${cur.stepIdx < cur.steps.length - 1 ? `<a class="btn" style="--c:#59C059" href="#/c/${esc(ch.id)}/${cur.stepIdx + 1}">Continue →</a>` : ''}</div>
         </div></div>`;
     }
@@ -425,7 +451,7 @@
       return `<button class="opt ${cls}" data-act="answer" data-k="${esc(key)}" data-o="${k}" ${answered ? 'disabled' : ''}><span class="opt-key">${String.fromCharCode(65 + pos)}</span><span dir="auto">${fmt(q.o[k])}</span></button>`;
     }).join('');
     const ok = a === q.a;
-    return `<div class="quiz" data-quiz="${esc(key)}"><h2>${title}</h2><div class="q-dots">${dots}</div>
+    return `<div class="quiz" data-quiz="${esc(key)}"><h2>${title}</h2>${bonusTag}<div class="q-dots">${dots}</div>
       <div class="q-card ${answered ? (ok ? 'is-ok' : 'is-bad') : ''}">
         <div class="q-num">Question ${r.idx + 1} of ${qs.length}</div>
         <h3 dir="auto">${fmt(q.q)}</h3>
@@ -434,23 +460,22 @@
           <div class="row end"><button class="btn" data-act="qNext" data-k="${esc(key)}">${r.idx < qs.length - 1 ? 'Next question →' : 'See results 🏁'}</button></div>` : '<p class="muted small">Tip: press 1–4 on your keyboard to answer.</p>'}
       </div></div>`;
   }
-  function quizContext() {
+  function quizKind() {
     const ch = cur.ch; const st = cur.steps[cur.stepIdx];
-    if (st.type === 'test') return { qs: ch.test.questions, kind: 'test', ch };
-    return { qs: ch.sections[st.i].quiz, kind: 'quiz', ch };
+    return { kind: st.type === 'test' ? 'test' : 'quiz', ch };
   }
   function answer(key, o) {
-    const r = ui.runs[key]; const { qs } = quizContext();
+    const r = ui.runs[key];
     if (!r || r.ans[r.idx] != null) return;
     r.ans[r.idx] = o;
-    const ok = o === qs[r.idx].a; beep(ok);
-    const qaKey = `${key}|${r.idx}`;
+    const ok = o === r.qs[r.idx].a; beep(ok);
+    const qaKey = `${key}|${r.ids[r.idx]}`;
     if (ok && !P.qa[qaKey]) { P.qa[qaKey] = 1; r.gained += 10; addXP(10); }
     if (ok) confetti(18);
     rerender();
   }
   function quizNext(key) {
-    const r = ui.runs[key]; const { qs, kind, ch } = quizContext();
+    const r = ui.runs[key]; const { kind, ch } = quizKind(); const qs = r.qs;
     if (r.idx < qs.length - 1) { r.idx++; rerender(); return; }
     r.finished = true;
     const right = r.ans.filter((a, k) => a === qs[k].a).length; const pct = Math.round((right / qs.length) * 100);
@@ -460,12 +485,14 @@
       if (firstPass) { r.gained += 100; addXP(100); confetti(150); toast('🏆 Chapter test passed!', 2500); }
     } else {
       const prev = P.quiz[key] || 0;
-      P.quiz[key] = Math.max(prev, pct); saveP();
+      P.quiz[key] = Math.max(prev, pct);
+      if (pct < 60) P.quizFailed[key] = 1; else delete P.quizFailed[key];
+      saveP();
       if (pct === 100 && prev < 100) { r.gained += 15; addXP(15); confetti(90); }
     }
     rerender();
   }
-  function quizEdit(ch, path, label) {
+  function quizEdit(ch, path, label, note) {
     const qs = getPath(ch, path) || [];
     const items = qs.map((q, k) => `
       <div class="edit-q">
@@ -479,7 +506,7 @@
         </div>
         <input data-bind="${path}.${k}.e" value="${esc(q.e || '')}" placeholder="Explanation shown after answering" dir="auto">
       </div>`).join('');
-    return `<h2>✏️ ${esc(label)} – edit questions</h2><p class="hint">Select the radio button next to the correct answer.</p>
+    return `<h2>✏️ ${esc(label)} – edit questions</h2><p class="hint">${note ? esc(note) + ' ' : ''}Select the radio button next to the correct answer.</p>
       <div class="edit-qs">${items || '<div class="empty">No questions yet.</div>'}</div>
       <button class="btn" style="--c:#59C059" data-act="qAdd" data-p="${path}">+ Add question</button>`;
   }
@@ -826,13 +853,27 @@
     guess.split('').forEach((c, i) => { if (res[i] !== 'g' && left[c]) { res[i] = 'y'; left[c]--; } });
     return res;
   }
-  function wdNew(a, prev) {
-    let wi = rnd(a.words.length); if (a.words.length > 1) while (wi === prev) wi = rnd(a.words.length);
-    return { wi, guesses: [], cur: '', over: false, won: false, hint: false };
+  // Word Guess keeps track of which words this trainee has solved (saved in their progress),
+  // only serves unsolved words, and is complete once every word is solved.
+  const wdSolved = (key) => P.wg[key] || (P.wg[key] = []);
+  function wdNew(a, key, prev) {
+    const left = a.words.map((_, i) => i).filter((i) => !wdSolved(key).includes(i));
+    if (!left.length) return { wi: -1, allDone: true, guesses: [], cur: '', over: false, won: false, hint: false };
+    const pool = left.length > 1 ? left.filter((i) => i !== prev) : left;
+    return { wi: pool[rnd(pool.length)], allDone: false, guesses: [], cur: '', over: false, won: false, hint: false };
   }
   function wordGuessAct(a, key) {
-    const s = ui.act[key] || (ui.act[key] = Object.assign(wdNew(a, -1), { wins: 0 }));
-    const k = esc(key); const word = a.words[s.wi].w.toUpperCase(); const L = word.length;
+    const s = ui.act[key] || (ui.act[key] = wdNew(a, key, -1));
+    const k = esc(key); const solved = wdSolved(key); const n = a.words.length; const leftN = n - solved.length;
+    const slots = `<div class="wd-slots" aria-label="Words solved">${a.words.map((w, i) => solved.includes(i)
+      ? `<span class="wd-slot ok" title="Solved">✔ ${esc(w.w.toUpperCase())}</span>`
+      : `<span class="wd-slot ${i === s.wi ? 'cur' : ''}" title="${i === s.wi ? 'Current word' : 'Not solved yet'}">${'•'.repeat(w.w.length)}</span>`).join('')}</div>`;
+    const tally = `<span class="pill">✔ Solved ${solved.length}/${n}${leftN ? ` · ${leftN} to go` : ''}</span>`;
+    if (s.allDone) {
+      return `<div class="wordguess">${slots}<div class="wd-msg ok big">🏆 You solved all ${n} words!</div>
+        <div class="row center">${tally}<button class="btn ghost" data-act="wdRestart" data-k="${k}">↻ Play all ${n} again</button></div></div>`;
+    }
+    const word = a.words[s.wi].w.toUpperCase(); const L = word.length;
     const rows = [];
     for (let r = 0; r < 6; r++) {
       const g = s.guesses[r]; const sc = g ? wdScore(g, word) : null; const typing = !g && r === s.guesses.length && !s.over;
@@ -847,23 +888,27 @@
       const label = c === '↵' ? 'Enter' : c === '⌫' ? '⌫' : c;
       return `<button class="kb-key ${c === '↵' || c === '⌫' ? 'wide' : ''} ${keyState[c] ? 'c-' + keyState[c] : ''}" data-act="wdKey" data-k="${k}" data-key="${c}">${label}</button>`;
     }).join('')}</div>`).join('');
-    const status = s.won ? `<div class="wd-msg ok">🎉 Got it in ${s.guesses.length}! <b>${word}</b></div>`
-      : s.over ? `<div class="wd-msg bad">The word was <b>${word}</b>. ${esc(a.words[s.wi].hint || '')}</div>` : '';
-    return `<div class="wordguess" data-wordguess="${k}">
-      <div class="row between"><span class="pill">${L} letters · wins: ${s.wins}</span>
+    const status = s.won ? `<div class="wd-msg ok">🎉 Got it in ${s.guesses.length}! <b>${word}</b>${leftN ? ` · ${leftN} word${leftN === 1 ? '' : 's'} to go` : ` · 🏆 That was the last one: all ${n} words solved!`}</div>`
+      : s.over ? `<div class="wd-msg bad">The word was <b>${word}</b>. ${esc(a.words[s.wi].hint || '')} It stays in your list. You'll get another try later.</div>` : '';
+    const next = s.won && !leftN ? '' : `<div class="row center"><button class="btn" data-act="wdNext" data-k="${k}">▶ ${leftN === 1 && s.over ? 'Try that word again' : 'Next word'}</button></div>`;
+    return `<div class="wordguess" data-wordguess="${k}">${slots}
+      <div class="row between">${tally}<span class="muted small">${L} letters</span>
         ${s.hint || s.over || s.won ? `<span class="muted small">💡 ${esc(a.words[s.wi].hint || '')}</span>` : `<button class="btn sm ghost" data-act="wdHint" data-k="${k}">💡 Hint</button>`}</div>
       <div class="wd-board" style="--L:${L}">${rows.join('')}</div>${status}
-      ${s.over || s.won ? `<div class="row center"><button class="btn" data-act="wdNext" data-k="${k}">▶ Another word</button></div>` : `<div class="kb">${kb}</div><p class="muted small center">You can also type on your keyboard.</p>`}</div>`;
+      ${s.over || s.won ? next : `<div class="kb">${kb}</div><p class="muted small center">You can also type on your keyboard.</p>`}</div>`;
   }
   function wdKey(key, c) {
-    const s = ui.act[key]; const a = ui.meta[key] && ui.meta[key].a; if (!s || !a || s.over || s.won) return;
+    const s = ui.act[key]; const a = ui.meta[key] && ui.meta[key].a; if (!s || !a || s.allDone || s.over || s.won) return;
     const word = a.words[s.wi].w.toUpperCase();
     if (c === '⌫') s.cur = s.cur.slice(0, -1);
     else if (c === '↵') {
       if (s.cur.length < word.length) { toast('Not enough letters'); return; }
       s.guesses.push(s.cur); s.cur = ''; s.fresh = s.guesses.length - 1; s.typed = false;
-      if (s.guesses[s.guesses.length - 1] === word) { s.won = true; s.wins++; beep(true); completeAct(key); return; }
-      if (s.guesses.length >= 6) { s.over = true; beep(false); }
+      if (s.guesses[s.guesses.length - 1] === word) {
+        s.won = true; beep(true); confetti(40);
+        const solved = wdSolved(key); if (!solved.includes(s.wi)) solved.push(s.wi); saveP();
+        if (solved.length >= a.words.length) { completeAct(key); return; }
+      } else if (s.guesses.length >= 6) { s.over = true; beep(false); }
     } else if (/^[A-Z]$/.test(c) && s.cur.length < word.length) { s.cur += c; s.typed = true; s.fresh = -1; }
     if (c === '⌫') { s.typed = false; s.fresh = -1; }
     rerender();
@@ -1293,7 +1338,8 @@
       case 'cnSubmit': cnSubmit(k); break;
       case 'wdKey': el.blur(); wdKey(k, el.dataset.key); break;
       case 'wdHint': ui.act[k].hint = true; rerender(); break;
-      case 'wdNext': { const s = ui.act[k]; Object.assign(s, wdNew(ui.meta[k].a, s.wi)); rerender(); break; }
+      case 'wdNext': { const s = ui.act[k]; Object.assign(s, wdNew(ui.meta[k].a, k, s.wi)); rerender(); break; }
+      case 'wdRestart': P.wg[k] = []; saveP(); ui.act[k] = wdNew(ui.meta[k].a, k, -1); rerender(); break;
       case 'ppGuess': { const inp = el.closest('.activity').querySelector('.pp-in'); if (inp) ppGuess(k, inp.value); break; }
       case 'ppNext': { const s = ui.act[k]; s.p++; s.shown = 1; s.wrong = []; s.state = 'play'; if (s.p >= ui.meta[k].a.puzzles.length) { completeAct(k); break; } ui.focusTerm = k; rerender(); break; }
       case 'ordAdd': { const s = ui.act[k]; s.seq.push(num(el.dataset.i)); s.checked = false; rerender(); break; }
@@ -1428,7 +1474,7 @@
       case 'termAdd': ch.sections[i].terms.push({ t: '', d: '' }); saveCourseNow(); rerender(); { const ins = app.querySelectorAll('.edit-term input'); if (ins.length) ins[ins.length - 1].focus(); } return;
       case 'termDel': ch.sections[i].terms.splice(j, 1); saveCourseNow(); rerender(); return;
       case 'termUp': swap(ch.sections[i].terms, j, j - 1); saveCourseNow(); rerender(); return;
-      case 'qAdd': { if (p === 'test.questions' && !ch.test) ch.test = { url: '', questions: [] }; getPath(ch, p).push({ q: '', o: ['', '', '', ''], a: 0, e: '' }); saveCourseNow(); rerender(); return; }
+      case 'qAdd': { if (p === 'test.questions' && !ch.test) ch.test = { url: '', questions: [] }; if (!getPath(ch, p)) setPath(ch, p, []); getPath(ch, p).push({ q: '', o: ['', '', '', ''], a: 0, e: '' }); saveCourseNow(); rerender(); return; }
       case 'qDel': getPath(ch, p).splice(k, 1); saveCourseNow(); rerender(); return;
       case 'optAdd': getPath(ch, p)[k].o.push(''); saveCourseNow(); rerender(); return;
       case 'optDel': { const q = getPath(ch, p)[k]; if (q.o.length <= 2) { toast('A question needs at least 2 options'); return; } q.o.splice(n, 1); if (q.a >= q.o.length) q.a = 0; else if (q.a > n) q.a--; saveCourseNow(); rerender(); return; }
@@ -1558,7 +1604,7 @@
   $('#resetBtn').addEventListener('click', () => {
     if (!me()) return;
     if (!confirm(`Reset all XP and progress for ${me().name}? This cannot be undone.`)) return;
-    ['flip', 'qa', 'quiz', 'act', 'lab', 'labxp', 'checks', 'test'].forEach((key) => { P[key] = {}; });
+    ['flip', 'qa', 'quiz', 'quizFailed', 'retryUsed', 'act', 'lab', 'labxp', 'checks', 'test', 'blitz', 'wg'].forEach((key) => { P[key] = {}; });
     P.xp = 0; saveP(); ui.runs = {}; ui.act = {}; renderTopbar(); rerender(); toast('Progress reset. Fresh start! 🌱');
   });
 

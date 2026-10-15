@@ -8,7 +8,8 @@
  * Shape:
  *   chapter  = { id, num, title, he, duration, mode, icon, color, intro,
  *                sections[], activities[], labs[], test }
- *   section  = { title, he?, terms: [{ t, d }], quiz: [{ q, o: [..], a, e }] }
+ *   section  = { title, he?, terms: [{ t, d }], quiz: [{ q, o: [..], a, e }],
+ *                retry?: [ same as quiz ] }  -> extra questions, used only after a failed attempt
  *              t = term, d = definition, q = question, o = options,
  *              a = index of the correct option (0-based), e = explanation
  *   lab      = { title, he?, kind: "internal" | "external" | "interactive" | "checklist",
@@ -103,6 +104,41 @@ window.COURSE = {
               "a": 1,
               "e": "עיוני = theory, מעבדה = lab."
             }
+          ],
+          "retry": [
+            {
+              "q": "Where do you see your XP, quiz results and lab progress?",
+              "o": [
+                "Nowhere, it isn't tracked",
+                "In the chapter test results",
+                "Only in your mentor's notes",
+                "On the 📈 My progress page"
+              ],
+              "a": 3,
+              "e": "Each trainee's progress is tracked under 📈 My progress."
+            },
+            {
+              "q": "What's the '📋 All terms' button for?",
+              "o": [
+                "Shows the whole chapter's terms on one page, with research links",
+                "Prints a summary of the chapter test's answers",
+                "Marks the chapter as complete and skips to the test",
+                "Shows only the terms you answered wrong in quizzes"
+              ],
+              "a": 0,
+              "e": "It lists every term of the chapter on one page, with a 🔎 research button per term."
+            },
+            {
+              "q": "What does the chapter test check?",
+              "o": [
+                "That you completed every mini-game",
+                "That you can recite the card definitions",
+                "That you understand how things work",
+                "How fast you finished the chapter"
+              ],
+              "a": 2,
+              "e": "Tests check understanding of the processes, not memorized definitions."
+            }
           ]
         },
         {
@@ -171,6 +207,41 @@ window.COURSE = {
               "a": 1,
               "e": "Cards + research + labs = real understanding. Explaining it back proves you've got it."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which question should you ask yourself about every new term?",
+              "o": [
+                "Which chapter and section is it filed under?",
+                "Will this exact wording be on the mini quiz?",
+                "How short can I make its definition?",
+                "What happens step by step, and why does it exist?"
+              ],
+              "a": 3,
+              "e": "Understanding the process and the problem it solves is what makes knowledge stick."
+            },
+            {
+              "q": "VLAN → portgroup, RAID → aggregate, LUN → datastore. What habit is this?",
+              "o": [
+                "Memorizing acronyms",
+                "Connecting the dots between chapters",
+                "Skipping ahead to later chapters",
+                "Learning only the newest terms"
+              ],
+              "a": 1,
+              "e": "Terms from different chapters build on each other. Linking them gives you the big picture."
+            },
+            {
+              "q": "What's the best proof that you understand a process?",
+              "o": [
+                "You can read its card definition out loud",
+                "You can explain it on a whiteboard in your own words",
+                "You passed its mini quiz once, on the first try",
+                "You flipped its card twice in the same session"
+              ],
+              "a": 1,
+              "e": "If you can explain and draw it, you know it."
+            }
           ]
         },
         {
@@ -226,6 +297,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Trying (and researching) on your own first is how you learn. Then ask your mentor or a teammate."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Your lab experiment broke something you created yourself. Is that OK?",
+              "o": [
+                "Yes, that's what the lab is for. Learn from it and fix it",
+                "Only on Fridays",
+                "No, you must never break anything in the lab",
+                "Only if your mentor was watching"
+              ],
+              "a": 0,
+              "e": "Be bold in the lab. Mistakes on your own objects are how you learn."
+            },
+            {
+              "q": "Where are the original term lists for each chapter kept?",
+              "o": [
+                "In the chapter test",
+                "On the team wiki",
+                "On the storage system",
+                "In your email"
+              ],
+              "a": 1,
+              "e": "The team wiki holds the original term lists, under 'הכשרת צוות CloudCore'."
+            },
+            {
+              "q": "Why do lab objects follow the team naming standard?",
+              "o": [
+                "So the lab deletes them automatically every night",
+                "To make other teams' objects harder to find",
+                "Because the systems reject any other naming format",
+                "So later labs can reuse them and everyone recognizes them"
+              ],
+              "a": 3,
+              "e": "Consistent names keep the lab tidy and let later labs build on your work."
             }
           ]
         }
@@ -337,6 +443,41 @@ window.COURSE = {
               "a": 3,
               "e": "Routers work at Layer 3 and connect different networks."
             }
+          ],
+          "retry": [
+            {
+              "q": "At which layer does a switch forward traffic?",
+              "o": [
+                "Layer 1",
+                "Layer 2",
+                "Layer 4",
+                "Layer 3"
+              ],
+              "a": 1,
+              "e": "Switches forward frames by MAC address, which is Layer 2."
+            },
+            {
+              "q": "During encapsulation, what does the Transport layer add?",
+              "o": [
+                "The physical signal",
+                "A MAC header",
+                "A TCP/UDP header with ports",
+                "An IP header"
+              ],
+              "a": 2,
+              "e": "L4 adds the TCP/UDP header (ports). L3 adds IP, L2 adds MAC."
+            },
+            {
+              "q": "The TCP/IP model's 'Internet' layer matches which OSI layer?",
+              "o": [
+                "Network",
+                "Transport",
+                "Data Link",
+                "Session"
+              ],
+              "a": 0,
+              "e": "The Internet layer (IP) maps to OSI Layer 3, Network."
+            }
           ]
         },
         {
@@ -377,6 +518,30 @@ window.COURSE = {
               ],
               "a": 2,
               "e": "Single-mode fiber carries light for many kilometers. Multi-mode is for shorter runs (hundreds of meters), and copper/DAC for meters."
+            }
+          ],
+          "retry": [
+            {
+              "q": "How many collision domains does an 8-port hub create?",
+              "o": [
+                "2",
+                "8",
+                "16",
+                "1"
+              ],
+              "a": 3,
+              "e": "All hub ports share a single collision domain."
+            },
+            {
+              "q": "Which medium carries data as light?",
+              "o": [
+                "Coax",
+                "Twisted-pair copper",
+                "Fiber optic",
+                "DAC twinax"
+              ],
+              "a": 2,
+              "e": "Fiber carries light. Copper carries electrical signals."
             }
           ]
         },
@@ -457,6 +622,41 @@ window.COURSE = {
               ],
               "a": 1,
               "e": "A trunk carries several VLANs using 802.1Q tags. An access port carries only one."
+            }
+          ],
+          "retry": [
+            {
+              "q": "A switch gets a frame for a MAC it hasn't learned yet. What does it do?",
+              "o": [
+                "Drops it and waits for an ARP reply",
+                "Sends it up to the default gateway",
+                "Asks the DNS server for the MAC",
+                "Floods it out of all ports in the VLAN"
+              ],
+              "a": 3,
+              "e": "Unknown unicast is flooded within the VLAN until the switch learns where the MAC lives."
+            },
+            {
+              "q": "Two links to the same switch are bundled for bandwidth and redundancy. What is this?",
+              "o": [
+                "A trunk",
+                "MAC flapping",
+                "STP",
+                "LACP / port-channel"
+              ],
+              "a": 3,
+              "e": "LACP bundles physical links into one logical port-channel."
+            },
+            {
+              "q": "The native VLAN differs on the two ends of a trunk. What's the likely result?",
+              "o": [
+                "The trunk becomes an access port",
+                "STP turns off",
+                "Nothing changes",
+                "Untagged traffic leaks into the wrong VLAN"
+              ],
+              "a": 3,
+              "e": "Untagged frames land in whichever VLAN each side calls native, so traffic mixes between VLANs."
             }
           ]
         },
@@ -561,6 +761,52 @@ window.COURSE = {
               "a": 0,
               "e": "ARP maps IP to MAC on the local segment."
             }
+          ],
+          "retry": [
+            {
+              "q": "What is the broadcast address of 192.168.10.64/26?",
+              "o": [
+                "192.168.10.127",
+                "192.168.10.63",
+                "192.168.10.128",
+                "192.168.10.255"
+              ],
+              "a": 0,
+              "e": "/26 = blocks of 64. The .64 block runs .64–.127, so .127 is the broadcast."
+            },
+            {
+              "q": "Many internal hosts reach the internet through one public IP. What does this?",
+              "o": [
+                "DHCP",
+                "NAT",
+                "ARP",
+                "STP"
+              ],
+              "a": 1,
+              "e": "NAT translates many private addresses to one public address."
+            },
+            {
+              "q": "Which tool shows every router hop on the path to a destination?",
+              "o": [
+                "ping",
+                "arp",
+                "nslookup",
+                "traceroute"
+              ],
+              "a": 3,
+              "e": "Traceroute raises the TTL hop by hop and lists each router."
+            },
+            {
+              "q": "PCs on another subnet get no IP from DHCP. What's usually missing on the router?",
+              "o": [
+                "A higher STP priority on the port",
+                "A static ARP entry for each PC",
+                "A DNS record for the DHCP server",
+                "A DHCP relay (ip helper-address)"
+              ],
+              "a": 3,
+              "e": "DHCP Discover is a broadcast, and routers don't forward broadcasts. A relay forwards it to the server."
+            }
           ]
         },
         {
@@ -602,6 +848,30 @@ window.COURSE = {
               "a": 0,
               "e": "DNS uses UDP port 53 (and TCP 53 for large responses and zone transfers)."
             }
+          ],
+          "retry": [
+            {
+              "q": "Why does NTP use UDP rather than TCP?",
+              "o": [
+                "UDP guarantees that every packet arrives",
+                "TCP packets can't carry timestamp fields",
+                "Low overhead: a small, fast request and reply",
+                "UDP traffic is always encrypted end to end"
+              ],
+              "a": 2,
+              "e": "UDP has no handshake overhead, which is ideal for small, frequent queries like time sync."
+            },
+            {
+              "q": "What does the 'S' in TCP's SYN stand for?",
+              "o": [
+                "Synchronize",
+                "Secure",
+                "Stop",
+                "Session"
+              ],
+              "a": 0,
+              "e": "SYN = synchronize sequence numbers, the first step of the 3-way handshake."
+            }
           ]
         },
         {
@@ -642,6 +912,30 @@ window.COURSE = {
               ],
               "a": 2,
               "e": "HTTPS = HTTP over TLS (the successor of SSL)."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which DNS record does a reverse lookup (IP → name)?",
+              "o": [
+                "CNAME",
+                "A",
+                "PTR",
+                "MX"
+              ],
+              "a": 2,
+              "e": "PTR records map an IP back to a name."
+            },
+            {
+              "q": "What does a DNS record's TTL control?",
+              "o": [
+                "Which port it uses",
+                "Its encryption strength",
+                "How many routers it can cross",
+                "How long resolvers may cache it"
+              ],
+              "a": 3,
+              "e": "TTL tells caches how long they may keep the answer."
             }
           ]
         },
@@ -706,6 +1000,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "RDP = TCP 3389."
+            }
+          ],
+          "retry": [
+            {
+              "q": "You need to check from a server that TCP port 443 on another server is reachable. Which old protocol's client is handy?",
+              "o": [
+                "Telnet",
+                "NTP",
+                "RDP",
+                "FTP"
+              ],
+              "a": 0,
+              "e": "telnet host 443 opens a TCP connection to the port, so it doubles as a port tester."
+            },
+            {
+              "q": "Which protocol sends passwords in clear text?",
+              "o": [
+                "SFTP",
+                "HTTPS",
+                "Telnet",
+                "SSH"
+              ],
+              "a": 2,
+              "e": "Telnet (and FTP) send everything, including passwords, unencrypted."
+            },
+            {
+              "q": "Which port does HTTPS use by default?",
+              "o": [
+                "22",
+                "8443",
+                "80",
+                "443"
+              ],
+              "a": 3,
+              "e": "HTTPS = TCP 443. HTTP = 80."
             }
           ]
         }
@@ -1193,6 +1522,41 @@ window.COURSE = {
               "a": 2,
               "e": "systemd starts first and brings up all the services."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which file stores the hashed user passwords?",
+              "o": [
+                "/etc/passwd",
+                "/etc/sudoers",
+                "/etc/group",
+                "/etc/shadow"
+              ],
+              "a": 3,
+              "e": "Hashes live in /etc/shadow, readable only by root. /etc/passwd lists the users."
+            },
+            {
+              "q": "A filesystem has free space but you can't create files. What may have run out?",
+              "o": [
+                "Swap",
+                "RAM",
+                "Inodes",
+                "CPU"
+              ],
+              "a": 2,
+              "e": "Every file needs an inode. Check with df -i."
+            },
+            {
+              "q": "Which tool installs an RPM and its dependencies from a repository?",
+              "o": [
+                "yum / dnf",
+                "make",
+                "rpm -ivh",
+                "tar"
+              ],
+              "a": 0,
+              "e": "yum/dnf resolve dependencies. rpm alone doesn't."
+            }
           ]
         },
         {
@@ -1268,6 +1632,41 @@ window.COURSE = {
               ],
               "a": 1,
               "e": "Make the disk a PV, add it to the VG, then extend the LV. The -r flag grows the filesystem too."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Where do you make a mount permanent across reboots?",
+              "o": [
+                "/etc/fstab",
+                "~/.bashrc",
+                "/etc/hosts",
+                "/etc/mtab"
+              ],
+              "a": 0,
+              "e": "/etc/fstab lists the filesystems to mount at boot."
+            },
+            {
+              "q": "Which crontab line runs a job at 23:30 every day?",
+              "o": [
+                "23 30 * * *",
+                "30 * 23 * *",
+                "* 23 30 * *",
+                "30 23 * * *"
+              ],
+              "a": 3,
+              "e": "The fields are minute, hour, day, month, weekday. So 30 23 * * * is 23:30 daily."
+            },
+            {
+              "q": "Which line must a shell script start with to run under bash?",
+              "o": [
+                "run bash",
+                "@echo bash",
+                "// bash",
+                "#!/bin/bash"
+              ],
+              "a": 3,
+              "e": "The shebang (#!) tells the system which interpreter to use."
             }
           ]
         },
@@ -1348,6 +1747,41 @@ window.COURSE = {
               ],
               "a": 3,
               "e": "ASCII mode corrupts binary files. Switch to 'bin' first. (hash just prints progress marks.)"
+            }
+          ],
+          "retry": [
+            {
+              "q": "Capture only SSH traffic on eth0:",
+              "o": [
+                "tcpdump -i eth0 port 22",
+                "ping -i eth0 22",
+                "netstat -i eth0 22",
+                "ethtool eth0 22"
+              ],
+              "a": 0,
+              "e": "tcpdump with a 'port 22' filter captures only SSH."
+            },
+            {
+              "q": "Which command lists the TCP/UDP ports the server is listening on, with their process?",
+              "o": [
+                "nslookup -l",
+                "ifconfig -a",
+                "ping -l",
+                "netstat -tulpn"
+              ],
+              "a": 3,
+              "e": "netstat -tulpn (or ss -tulpn) shows listeners and their programs."
+            },
+            {
+              "q": "Which command resolves a hostname to an IP?",
+              "o": [
+                "ethtool",
+                "ifconfig",
+                "tcpdump",
+                "nslookup"
+              ],
+              "a": 3,
+              "e": "nslookup (or dig) queries DNS."
             }
           ]
         },
@@ -1444,6 +1878,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "df -h. (free shows RAM; du shows how much space a directory uses.)"
+            }
+          ],
+          "retry": [
+            {
+              "q": "Copy a whole directory with its contents:",
+              "o": [
+                "ln -s src dst",
+                "cp -r src dst",
+                "mv -r src dst",
+                "cp src dst"
+              ],
+              "a": 1,
+              "e": "-r copies recursively."
+            },
+            {
+              "q": "Find files bigger than 100 MB under /var:",
+              "o": [
+                "find /var -size +100M",
+                "df /var 100M",
+                "ls /var > 100M",
+                "grep 100M /var"
+              ],
+              "a": 0,
+              "e": "find with -size +100M matches files over 100 MB."
+            },
+            {
+              "q": "Give a file's owner rw, and its group and others only r:",
+              "o": [
+                "chmod 600 file",
+                "chmod 777 file",
+                "chmod 755 file",
+                "chmod 644 file"
+              ],
+              "a": 3,
+              "e": "6 = rw for the owner, 4 = r for group and others."
             }
           ]
         },
@@ -1544,6 +2013,41 @@ window.COURSE = {
               ],
               "a": 3,
               "e": "sudo runs a single command with elevated rights, and it's logged."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Append a line to a file without overwriting it:",
+              "o": [
+                "echo text >> file",
+                "echo text < file",
+                "echo text | file",
+                "echo text > file"
+              ],
+              "a": 0,
+              "e": ">> appends. > overwrites."
+            },
+            {
+              "q": "Show the 10 most recent commands you ran:",
+              "o": [
+                "env | head",
+                "history | tail",
+                "top -10",
+                "ps | tail"
+              ],
+              "a": 1,
+              "e": "history lists your past commands. tail shows the last 10."
+            },
+            {
+              "q": "Find out where the 'python' binary that runs comes from:",
+              "o": [
+                "whatis python",
+                "env python",
+                "man python",
+                "which python"
+              ],
+              "a": 3,
+              "e": "which prints the full path of the command that will run."
             }
           ]
         }
@@ -1987,6 +2491,41 @@ window.COURSE = {
               "a": 1,
               "e": "NTFS supports ACLs. FAT32 has no permissions."
             }
+          ],
+          "retry": [
+            {
+              "q": "Run a program as a different user from CMD:",
+              "o": [
+                "runas",
+                "chown",
+                "sudo",
+                "su"
+              ],
+              "a": 0,
+              "e": "runas /user:DOMAIN\\user program."
+            },
+            {
+              "q": "Show the contents of a text file in CMD:",
+              "o": [
+                "type",
+                "show",
+                "cat",
+                "more -f"
+              ],
+              "a": 0,
+              "e": "type prints a file in CMD. (cat is Linux.)"
+            },
+            {
+              "q": "What is pagefile.sys?",
+              "o": [
+                "A backup copy of the registry hives",
+                "Disk space used as virtual memory",
+                "A spool file for queued print jobs",
+                "The boot sector of the system disk"
+              ],
+              "a": 1,
+              "e": "Windows pages memory to pagefile.sys when RAM runs short."
+            }
           ]
         },
         {
@@ -2054,6 +2593,41 @@ window.COURSE = {
               ],
               "a": 1,
               "e": "Task Scheduler."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Build your own console with the Certificates and DNS snap-ins:",
+              "o": [
+                "regedit",
+                "eventvwr",
+                "msconfig",
+                "mmc"
+              ],
+              "a": 3,
+              "e": "MMC hosts any combination of snap-ins."
+            },
+            {
+              "q": "A service must start automatically after reboot. Where do you set that?",
+              "o": [
+                "taskschd.msc",
+                "mstsc",
+                "services.msc",
+                "diskmgmt.msc"
+              ],
+              "a": 2,
+              "e": "Set its startup type to Automatic in services.msc."
+            },
+            {
+              "q": "Connect to a server's console session over RDP:",
+              "o": [
+                "mstsc /admin",
+                "rdp --admin",
+                "runas /rdp",
+                "mstsc /console-only"
+              ],
+              "a": 0,
+              "e": "mstsc /admin connects to the administrative console session."
             }
           ]
         },
@@ -2143,6 +2717,41 @@ window.COURSE = {
               "a": 3,
               "e": "Clear the local DNS cache."
             }
+          ],
+          "retry": [
+            {
+              "q": "Add a persistent static route in Windows:",
+              "o": [
+                "route -p add",
+                "netstat -r add",
+                "ipconfig /route",
+                "route print -p"
+              ],
+              "a": 0,
+              "e": "route -p add … survives reboots."
+            },
+            {
+              "q": "Clear the ARP cache:",
+              "o": [
+                "ipconfig /release",
+                "arp -d",
+                "arp -a",
+                "getmac /c"
+              ],
+              "a": 1,
+              "e": "arp -d deletes entries. arp -a lists them."
+            },
+            {
+              "q": "Copy a file to a Linux server from Windows over SSH:",
+              "o": [
+                "ftp -s",
+                "scp",
+                "copy \\\\server",
+                "robocopy -ssh"
+              ],
+              "a": 1,
+              "e": "scp is built into modern Windows (OpenSSH client)."
+            }
           ]
         },
         {
@@ -2211,6 +2820,41 @@ window.COURSE = {
               "a": 2,
               "e": "DCs authenticate using Kerberos."
             }
+          ],
+          "retry": [
+            {
+              "q": "Force a computer to apply new Group Policy now:",
+              "o": [
+                "gpupdate /force",
+                "gpresult /r",
+                "ipconfig /renew",
+                "netsh gp"
+              ],
+              "a": 0,
+              "e": "gpupdate /force re-applies all policies right away."
+            },
+            {
+              "q": "Which Windows role hosts websites?",
+              "o": [
+                "DFSR",
+                "IIS",
+                "AD DS",
+                "SCCM"
+              ],
+              "a": 1,
+              "e": "Internet Information Services is Microsoft's web server."
+            },
+            {
+              "q": "Where do you manage DNS zones and records on a Windows DNS server?",
+              "o": [
+                "dsa.msc",
+                "ncpa.cpl",
+                "services.msc",
+                "dnsmgmt.msc"
+              ],
+              "a": 3,
+              "e": "DNS Manager = dnsmgmt.msc."
+            }
           ]
         },
         {
@@ -2255,6 +2899,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "SCCM/MECM."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which system keeps SYSVOL in sync between domain controllers?",
+              "o": [
+                "IIS",
+                "DFSR",
+                "DAG",
+                "SCCM"
+              ],
+              "a": 1,
+              "e": "DFS Replication syncs SYSVOL (and file shares)."
+            },
+            {
+              "q": "A team needs document libraries and an intranet portal. Which product?",
+              "o": [
+                "DFSR",
+                "SCCM",
+                "Exchange",
+                "SharePoint"
+              ],
+              "a": 3,
+              "e": "SharePoint provides sites and document libraries."
             }
           ]
         }
@@ -2566,6 +3234,30 @@ window.COURSE = {
               "a": 3,
               "e": "Mechanical seek and rotation dominate HDD latency (milliseconds). Everything else takes microseconds."
             }
+          ],
+          "retry": [
+            {
+              "q": "All tracks at the same position across every platter form a…",
+              "o": [
+                "Head",
+                "Sector",
+                "Spindle",
+                "Cylinder"
+              ],
+              "a": 3,
+              "e": "A cylinder is the same track on all platters, readable without moving the arm."
+            },
+            {
+              "q": "Roughly how many random IOPS does one 15K RPM HDD deliver?",
+              "o": [
+                "About 18,000",
+                "About 1.8 million",
+                "About 180",
+                "About 18"
+              ],
+              "a": 2,
+              "e": "A 15K HDD does roughly 175–210 random IOPS. SSDs do tens of thousands or more."
+            }
           ]
         },
         {
@@ -2610,6 +3302,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "NVMe."
+            }
+          ],
+          "retry": [
+            {
+              "q": "What is the main weakness of SSDs compared with HDDs?",
+              "o": [
+                "Noisy operation",
+                "Slow random reads",
+                "High seek time",
+                "Limited write endurance"
+              ],
+              "a": 3,
+              "e": "Flash cells wear out after many writes, which endurance ratings (DWPD) describe."
+            },
+            {
+              "q": "Cheap, high-capacity 7.2K disks for archive data usually use which interface?",
+              "o": [
+                "SATA (NL)",
+                "Optane",
+                "NVMe",
+                "FC"
+              ],
+              "a": 0,
+              "e": "Nearline SATA/NL-SAS drives are the capacity tier."
             }
           ]
         },
@@ -2670,6 +3386,41 @@ window.COURSE = {
               ],
               "a": 3,
               "e": "Both transport SCSI commands."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Billions of backup files accessed over HTTPS with an API. Which architecture?",
+              "o": [
+                "NAS over SMB",
+                "SAN",
+                "Object storage",
+                "DAS"
+              ],
+              "a": 2,
+              "e": "Massive scale over HTTP APIs is what object storage is built for."
+            },
+            {
+              "q": "A single server with disks cabled straight to it, not shared. Which architecture?",
+              "o": [
+                "SAN",
+                "NAS",
+                "DAS",
+                "Object"
+              ],
+              "a": 2,
+              "e": "Direct Attached Storage."
+            },
+            {
+              "q": "In NAS, who owns the filesystem?",
+              "o": [
+                "The hypervisor",
+                "Each client",
+                "The storage system",
+                "The SAN switch"
+              ],
+              "a": 2,
+              "e": "The NAS serves files from its own filesystem. With SAN, the host owns the filesystem."
             }
           ]
         },
@@ -2755,6 +3506,41 @@ window.COURSE = {
               "a": 1,
               "e": "Overcommitment needs monitoring. When the pool is full, writes fail for every volume in it."
             }
+          ],
+          "retry": [
+            {
+              "q": "6 disks of 4 TB in RAID 5. Usable capacity?",
+              "o": [
+                "12 TB",
+                "20 TB",
+                "24 TB",
+                "16 TB"
+              ],
+              "a": 1,
+              "e": "RAID 5 = N−1 → 5 × 4 TB = 20 TB."
+            },
+            {
+              "q": "4 disks of 2 TB in RAID 10. Usable capacity?",
+              "o": [
+                "2 TB",
+                "6 TB",
+                "4 TB",
+                "8 TB"
+              ],
+              "a": 2,
+              "e": "RAID 10 mirrors everything: half of 8 TB = 4 TB."
+            },
+            {
+              "q": "A volume reserves all its space up front, even before data is written. This is…",
+              "o": [
+                "Deduplication",
+                "Thick provisioning",
+                "Tiering",
+                "Thin provisioning"
+              ],
+              "a": 1,
+              "e": "Thick reserves everything at creation. Thin grows as data arrives."
+            }
           ]
         },
         {
@@ -2831,6 +3617,41 @@ window.COURSE = {
               "a": 2,
               "e": "World Wide Name (WWNN for the node, WWPN for each port)."
             }
+          ],
+          "retry": [
+            {
+              "q": "What is an iSCSI initiator?",
+              "o": [
+                "The storage array port",
+                "The host that consumes the storage",
+                "The LUN itself",
+                "The SAN switch"
+              ],
+              "a": 1,
+              "e": "Initiator = host side. Target = storage side."
+            },
+            {
+              "q": "Which protocol carries FC frames inside lossless Ethernet?",
+              "o": [
+                "FCIP",
+                "FCoE",
+                "NFS",
+                "iSCSI"
+              ],
+              "a": 1,
+              "e": "FCoE = Fibre Channel over Ethernet (DCB)."
+            },
+            {
+              "q": "A host's WWPN is in the igroup but the host still can't see the LUN. What else is checked on the fabric?",
+              "o": [
+                "Zoning",
+                "The snapshot policy",
+                "The export policy",
+                "The DNS record"
+              ],
+              "a": 0,
+              "e": "Both layers must allow it: zoning on the switch and masking/mapping on the storage."
+            }
           ]
         },
         {
@@ -2872,6 +3693,30 @@ window.COURSE = {
               "a": 2,
               "e": "SMB = 445. NFS = 2049. iSCSI = 3260."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which protocol do ESXi hosts use to mount NAS datastores?",
+              "o": [
+                "iSCSI",
+                "S3",
+                "SMB",
+                "NFS"
+              ],
+              "a": 3,
+              "e": "ESXi mounts NAS datastores over NFS (v3 or v4.1)."
+            },
+            {
+              "q": "'CIFS' is an old name for which protocol?",
+              "o": [
+                "NFS v2",
+                "iSCSI",
+                "SMB (version 1)",
+                "FTP"
+              ],
+              "a": 2,
+              "e": "CIFS was a dialect of SMB1. People still say 'CIFS share'."
+            }
           ]
         },
         {
@@ -2908,6 +3753,30 @@ window.COURSE = {
               ],
               "a": 3,
               "e": "OpenStack Swift."
+            }
+          ],
+          "retry": [
+            {
+              "q": "An object's data, metadata and unique ID live together in a…",
+              "o": [
+                "Share",
+                "Qtree",
+                "LUN",
+                "Bucket"
+              ],
+              "a": 3,
+              "e": "Objects live in buckets (containers in Swift)."
+            },
+            {
+              "q": "Which of these is NOT an object-storage API?",
+              "o": [
+                "REST over HTTPS",
+                "Swift",
+                "NFS",
+                "S3"
+              ],
+              "a": 2,
+              "e": "NFS is a file (NAS) protocol."
             }
           ]
         },
@@ -2966,6 +3835,30 @@ window.COURSE = {
               "a": 0,
               "e": "ROW writes new data elsewhere and keeps the old blocks for the snapshot."
             }
+          ],
+          "retry": [
+            {
+              "q": "A diskless server boots its OS from a LUN. This is…",
+              "o": [
+                "PXE from NAS",
+                "NPIV",
+                "Boot from SAN",
+                "Storage tiering"
+              ],
+              "a": 2,
+              "e": "Boot from SAN: the OS disk is a LUN on the array."
+            },
+            {
+              "q": "Hot data moves to SSD and cold data to cheap HDD automatically. This is…",
+              "o": [
+                "Cloning",
+                "Deduplication",
+                "Storage tiering",
+                "MPIO"
+              ],
+              "a": 2,
+              "e": "Tiering places data by how hot it is."
+            }
           ]
         },
         {
@@ -3006,6 +3899,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Inline = in the write path, before the block lands on disk. Post-process dedup runs later."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which efficiency feature costs CPU to save space by encoding data?",
+              "o": [
+                "Thin provisioning",
+                "Compression",
+                "Snapshots",
+                "Tiering"
+              ],
+              "a": 1,
+              "e": "Compression trades CPU for capacity."
+            },
+            {
+              "q": "Post-process deduplication runs…",
+              "o": [
+                "Only when compression is turned off",
+                "Later, on a schedule, after data is written",
+                "Only while a tape backup is running",
+                "Inline, before every single write lands"
+              ],
+              "a": 1,
+              "e": "Post-process dedup scans and dedupes after the fact."
             }
           ]
         },
@@ -3067,6 +3984,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Each differential holds everything since the full, so you need only the full plus the latest one."
+            }
+          ],
+          "retry": [
+            {
+              "q": "A synthetic full backup is built…",
+              "o": [
+                "On the backup server, from the last full + incrementals",
+                "By reading every file on the client again",
+                "On tape, by copying last week's full backup",
+                "From snapshots taken on the client's own disk"
+              ],
+              "a": 0,
+              "e": "Synthetic fulls avoid re-reading the client."
+            },
+            {
+              "q": "A backup taken while the application keeps running is called…",
+              "o": [
+                "Synthetic",
+                "Cold / offline",
+                "Hot / dynamic",
+                "Differential"
+              ],
+              "a": 2,
+              "e": "Hot (online) backups don't need downtime."
             }
           ]
         }
@@ -3824,6 +4765,41 @@ window.COURSE = {
               "a": 2,
               "e": "The SP gives out-of-band access. Every LIF needs ONTAP running."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which ONTAP generation has clusters and SVMs?",
+              "o": [
+                "7-Mode (Data ONTAP 8.x)",
+                "StorageGRID Webscale",
+                "SANtricity on E-Series",
+                "Clustered ONTAP (CDOT / ONTAP 9)"
+              ],
+              "a": 3,
+              "e": "Clustered ONTAP introduced clusters and SVMs. 7-Mode had neither."
+            },
+            {
+              "q": "What is stored in a WAFL inode?",
+              "o": [
+                "A file's metadata and pointers to its blocks",
+                "Only the file's name and its extension",
+                "The LIF that clients use to reach the file",
+                "The RAID parity for that file's blocks"
+              ],
+              "a": 0,
+              "e": "Inodes hold metadata and block pointers. Names live in directories."
+            },
+            {
+              "q": "Which NetApp platform line uses cheaper QLC flash for capacity?",
+              "o": [
+                "7-Mode",
+                "FAS",
+                "E-Series HDD",
+                "C-Series"
+              ],
+              "a": 3,
+              "e": "AFF C-Series = capacity flash (QLC)."
+            }
           ]
         },
         {
@@ -3876,6 +4852,30 @@ window.COURSE = {
               ],
               "a": 3,
               "e": "The HA partner takes over the failed node's disks and LIFs."
+            }
+          ],
+          "retry": [
+            {
+              "q": "What triggers a consistency point (CP)?",
+              "o": [
+                "A timer (about 10 s) or NVRAM filling up",
+                "Only a manual command from the admin",
+                "Each scheduled snapshot on the volume",
+                "Every single client write that arrives"
+              ],
+              "a": 0,
+              "e": "CPs flush buffered writes regularly, or when NVRAM half-fills."
+            },
+            {
+              "q": "What's the dedicated network between the nodes of a cluster called?",
+              "o": [
+                "The management LIF",
+                "The broadcast domain",
+                "The SAN fabric",
+                "The cluster interconnect"
+              ],
+              "a": 3,
+              "e": "Nodes talk over the cluster interconnect (cluster ports/switches)."
             }
           ]
         },
@@ -3969,6 +4969,41 @@ window.COURSE = {
               "a": 2,
               "e": "vol move is non-disruptive."
             }
+          ],
+          "retry": [
+            {
+              "q": "How many disk failures does RAID-TEC survive in one RAID group?",
+              "o": [
+                "3",
+                "1",
+                "0",
+                "2"
+              ],
+              "a": 0,
+              "e": "RAID-TEC = triple parity."
+            },
+            {
+              "q": "A disk fails and ONTAP starts rebuilding right away. Onto what?",
+              "o": [
+                "NVRAM",
+                "A spare disk",
+                "The root aggregate",
+                "A Flash Cache card"
+              ],
+              "a": 1,
+              "e": "Spares are used automatically for reconstruction."
+            },
+            {
+              "q": "Which feature moves cold blocks from SSD aggregates to object storage?",
+              "o": [
+                "ADP",
+                "vol move",
+                "Flash Cache",
+                "FabricPool tiering"
+              ],
+              "a": 3,
+              "e": "FabricPool tiers cold data to S3/StorageGRID."
+            }
           ]
         },
         {
@@ -4017,6 +5052,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Aggregate → Volume → LUN."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which object can carry its own quota and security style inside a volume?",
+              "o": [
+                "Aggregate",
+                "Plex",
+                "LIF",
+                "Qtree"
+              ],
+              "a": 3,
+              "e": "Qtrees are sub-directories with their own quota, style and export policy."
+            },
+            {
+              "q": "What does an SVM's root volume hold?",
+              "o": [
+                "The top of the SVM's namespace ('/')",
+                "All of the SVM's user data and LUNs",
+                "The node's ONTAP operating system",
+                "The parity for the SVM's aggregates"
+              ],
+              "a": 0,
+              "e": "It's the '/' of the SVM's namespace."
             }
           ]
         },
@@ -4075,6 +5134,30 @@ window.COURSE = {
               "a": 2,
               "e": "Mounting the volume in the SVM namespace (junction path) makes it reachable over NFS/SMB."
             }
+          ],
+          "retry": [
+            {
+              "q": "A volume is accessed from both Windows and Linux. What maps users between them?",
+              "o": [
+                "Name mapping",
+                "Export policy",
+                "LUN mapping",
+                "Broadcast domain"
+              ],
+              "a": 0,
+              "e": "Name mapping links Windows and Unix identities."
+            },
+            {
+              "q": "Which security style uses NTFS ACLs for permissions?",
+              "o": [
+                "NTFS",
+                "None",
+                "Unix",
+                "Mixed (always Unix)"
+              ],
+              "a": 0,
+              "e": "The NTFS style uses Windows ACLs. The Unix style uses mode bits."
+            }
           ]
         },
         {
@@ -4111,6 +5194,30 @@ window.COURSE = {
               ],
               "a": 2,
               "e": "iSCSI initiators are identified by IQN."
+            }
+          ],
+          "retry": [
+            {
+              "q": "What do you put in an FC igroup?",
+              "o": [
+                "The host's MAC addresses",
+                "The host's IP addresses",
+                "The host's IQNs",
+                "The host's WWPNs"
+              ],
+              "a": 3,
+              "e": "FC igroups hold WWPNs. iSCSI igroups hold IQNs."
+            },
+            {
+              "q": "LUN masking on ONTAP is done with…",
+              "o": [
+                "Snapshot policies",
+                "Junction paths",
+                "igroups and LUN mapping",
+                "Export policies"
+              ],
+              "a": 2,
+              "e": "Map the LUN to an igroup to control which hosts see it."
             }
           ]
         },
@@ -4168,6 +5275,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "SAN LIFs don't migrate. The host's multipathing switches to another path."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Bonding two Ethernet ports into one logical port on a node is a…",
+              "o": [
+                "LIF",
+                "Plex",
+                "ifgrp",
+                "ipspace"
+              ],
+              "a": 2,
+              "e": "An interface group (ifgrp) bonds ports with LACP/multimode."
+            },
+            {
+              "q": "Two customers use the same 10.0.0.0/24 subnet on one cluster. What keeps them apart?",
+              "o": [
+                "Separate qtrees",
+                "Separate aggregates",
+                "Separate snapshot policies",
+                "Separate ipspaces"
+              ],
+              "a": 3,
+              "e": "ipspaces give each tenant its own routing domain."
             }
           ]
         },
@@ -4245,6 +5376,41 @@ window.COURSE = {
               "a": 1,
               "e": "MetroCluster is synchronous."
             }
+          ],
+          "retry": [
+            {
+              "q": "A user deleted a file an hour ago. What's the fastest way to get it back?",
+              "o": [
+                "Copy it from the .snapshot directory",
+                "Rebuild the aggregate from parity",
+                "Restore last night's backup from tape",
+                "Break the SnapMirror and fail over"
+              ],
+              "a": 0,
+              "e": "Users can self-restore from the volume's snapshots."
+            },
+            {
+              "q": "Which feature keeps a long backup history on a secondary system?",
+              "o": [
+                "Snap reserve",
+                "SnapVault",
+                "FlexClone",
+                "vol move"
+              ],
+              "a": 1,
+              "e": "SnapVault keeps more snapshots on the destination than on the source."
+            },
+            {
+              "q": "What keeps snapshots from eating the space users see?",
+              "o": [
+                "SyncMirror",
+                "Name mapping",
+                "Snap reserve",
+                "Snapshot policy"
+              ],
+              "a": 2,
+              "e": "Snap reserve sets aside a percentage of the volume for snapshot data."
+            }
           ]
         },
         {
@@ -4285,6 +5451,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "ONTAP dedup compares 4 KB blocks."
+            }
+          ],
+          "retry": [
+            {
+              "q": "What runs first on AFF inline efficiency: compression or compaction?",
+              "o": [
+                "They never run together",
+                "Only dedup runs inline",
+                "Compression, then compaction",
+                "Compaction, then compression"
+              ],
+              "a": 2,
+              "e": "Data is compressed, then the compressed chunks are compacted into 4 KB blocks."
+            },
+            {
+              "q": "Dedup finds two identical 4 KB blocks. What does it keep?",
+              "o": [
+                "One copy, with both pointing to it",
+                "Neither: it deletes them",
+                "A snapshot of each",
+                "Both copies, compressed"
+              ],
+              "a": 0,
+              "e": "Duplicates become shared references to a single block."
             }
           ]
         }
@@ -4670,6 +5860,30 @@ window.COURSE = {
               "a": 1,
               "e": "Aqua = OM3/OM4 multi-mode."
             }
+          ],
+          "retry": [
+            {
+              "q": "What is an SFP?",
+              "o": [
+                "A RAID level",
+                "An FC zone type",
+                "A fiber patch panel",
+                "A pluggable optical transceiver"
+              ],
+              "a": 3,
+              "e": "SFPs plug into switch/HBA ports and convert electrical signals to light."
+            },
+            {
+              "q": "Yellow fiber cable usually means…",
+              "o": [
+                "Multi-mode OM4 (short reach)",
+                "Single-mode (long reach)",
+                "Copper DAC twinax",
+                "Cat6 Ethernet copper"
+              ],
+              "a": 1,
+              "e": "Yellow jackets are single-mode. Aqua is multi-mode OM3/OM4."
+            }
           ]
         },
         {
@@ -4745,6 +5959,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Each host and array connects to both fabrics, and MPIO uses both."
+            }
+          ],
+          "retry": [
+            {
+              "q": "What is an alias in SAN zoning?",
+              "o": [
+                "A port speed setting",
+                "A backup zone",
+                "A second fabric",
+                "A friendly name for a WWPN"
+              ],
+              "a": 3,
+              "e": "Aliases make zones readable (esx01_hba0 instead of 10:00:…)."
+            },
+            {
+              "q": "What does an initiator's PLOGI do?",
+              "o": [
+                "Logs into the fabric for an FCID",
+                "Saves the zoning config",
+                "Logs into a target port before I/O",
+                "Enables NPIV"
+              ],
+              "a": 2,
+              "e": "FLOGI = fabric login. PLOGI = port login to the target."
+            },
+            {
+              "q": "An edge switch passes its hosts' logins up to a core switch. Which mode is this?",
+              "o": [
+                "Hard zoning",
+                "Full fabric mode",
+                "ISL trunking",
+                "NPV / Access Gateway"
+              ],
+              "a": 3,
+              "e": "NPV (Cisco) / Access Gateway (Brocade) keep the domain count low."
             }
           ]
         },
@@ -4825,6 +6074,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "nsshow lists the local switch's name server entries."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which Brocade command shows the status of every port?",
+              "o": [
+                "switchshow",
+                "supportsave",
+                "cfgshow",
+                "alicreate"
+              ],
+              "a": 0,
+              "e": "switchshow lists ports, speeds, states and the logged-in WWPNs."
+            },
+            {
+              "q": "Collect diagnostic logs for vendor support:",
+              "o": [
+                "nsshow",
+                "supportsave",
+                "sfpshow",
+                "zoneshow"
+              ],
+              "a": 1,
+              "e": "supportsave gathers everything support needs."
+            },
+            {
+              "q": "Which port type connects a switch to a host or storage device?",
+              "o": [
+                "EX_Port",
+                "E_Port",
+                "G_Port",
+                "F_Port"
+              ],
+              "a": 3,
+              "e": "F_Port faces the device (N_Port). E_Port is switch-to-switch."
             }
           ]
         }
@@ -5079,6 +6363,30 @@ window.COURSE = {
               "a": 3,
               "e": "The namespace is flat. '/' is just part of the key."
             }
+          ],
+          "retry": [
+            {
+              "q": "Where is custom information like 'project=finance' stored on an object?",
+              "o": [
+                "In the bucket name",
+                "In a LUN",
+                "In the RAID stripe",
+                "In its metadata"
+              ],
+              "a": 3,
+              "e": "Objects carry key-value metadata alongside their data."
+            },
+            {
+              "q": "What uniquely identifies an object inside a bucket?",
+              "o": [
+                "Its key",
+                "Its WWPN",
+                "Its inode",
+                "Its LUN ID"
+              ],
+              "a": 0,
+              "e": "The key is the object's unique name in the bucket."
+            }
           ]
         },
         {
@@ -5127,6 +6435,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Multipart uploads in parallel, and retries only the failed parts. S3 also caps a single PUT at 5 GB."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which HTTP method uploads an object to S3?",
+              "o": [
+                "HEAD",
+                "TRACE",
+                "GET",
+                "PUT"
+              ],
+              "a": 3,
+              "e": "PUT uploads, GET downloads, DELETE removes and HEAD reads metadata."
+            },
+            {
+              "q": "What is an S3 endpoint?",
+              "o": [
+                "The URL that clients send requests to",
+                "The last object in a bucket",
+                "An NFS export",
+                "A backup copy"
+              ],
+              "a": 0,
+              "e": "Clients point at the endpoint, e.g. https://s3.company.local."
             }
           ]
         },
@@ -5180,6 +6512,30 @@ window.COURSE = {
               ],
               "a": 2,
               "e": "Object Lock enforces immutability. Versioning alone can still be deleted by an admin."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Objects older than 90 days should move to a cheaper tier automatically. Use…",
+              "o": [
+                "Object Lock",
+                "Multipart upload",
+                "A bucket alias",
+                "A lifecycle policy"
+              ],
+              "a": 3,
+              "e": "Lifecycle rules transition or expire objects by age."
+            },
+            {
+              "q": "Overwritten objects must stay recoverable. Turn on…",
+              "o": [
+                "Multipart upload",
+                "Compression",
+                "Versioning",
+                "Public access"
+              ],
+              "a": 2,
+              "e": "Versioning keeps every previous version."
             }
           ]
         }
@@ -5325,6 +6681,30 @@ window.COURSE = {
               "a": 3,
               "e": "UCS Manager runs on the Fabric Interconnects and manages every chassis."
             }
+          ],
+          "retry": [
+            {
+              "q": "A 1U server with its own power supplies and NICs, mounted in a rack, is a…",
+              "o": [
+                "Fabric Interconnect",
+                "Rack ('pizza') server",
+                "Blade",
+                "Chassis"
+              ],
+              "a": 1,
+              "e": "Rack servers are standalone boxes, typically 1U/2U."
+            },
+            {
+              "q": "What's the main advantage of blades over rack servers?",
+              "o": [
+                "They need no management network",
+                "They never need firmware updates",
+                "Higher density and fewer cables",
+                "They're always cheaper per server"
+              ],
+              "a": 2,
+              "e": "Blades share enclosure infrastructure, so racks get denser with fewer cables."
+            }
           ]
         },
         {
@@ -5390,6 +6770,30 @@ window.COURSE = {
               "a": 3,
               "e": "Flex-10 / FlexFabric."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which HP component is the gateway to all blades' iLOs in a c7000 enclosure?",
+              "o": [
+                "LOM",
+                "Onboard Administrator",
+                "Flex-10",
+                "Virtual Connect"
+              ],
+              "a": 1,
+              "e": "The OA manages the enclosure and links to every blade's iLO."
+            },
+            {
+              "q": "In Virtual Connect, what lets a blade's MACs and WWNs move to another bay?",
+              "o": [
+                "The OA",
+                "A server profile",
+                "A device bay",
+                "A mezzanine card"
+              ],
+              "a": 1,
+              "e": "The identity lives in the profile, not the hardware."
+            }
           ]
         },
         {
@@ -5439,6 +6843,30 @@ window.COURSE = {
               "a": 1,
               "e": "Each chassis's IOMs uplink to FI A and FI B."
             }
+          ],
+          "retry": [
+            {
+              "q": "How many Fabric Interconnects does a standard UCS domain have?",
+              "o": [
+                "Four",
+                "One per chassis",
+                "One",
+                "Two (A and B)"
+              ],
+              "a": 3,
+              "e": "A redundant FI pair, A and B."
+            },
+            {
+              "q": "Remote console to a UCS blade goes through the…",
+              "o": [
+                "Onboard Administrator",
+                "iDRAC",
+                "vCenter only",
+                "KVM manager (via CIMC)"
+              ],
+              "a": 3,
+              "e": "UCS provides KVM console access through each server's CIMC."
+            }
           ]
         },
         {
@@ -5479,6 +6907,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "OpenManage Enterprise. The others are Cisco or HP tools."
+            }
+          ],
+          "retry": [
+            {
+              "q": "An HBA must go into a specific PCIe position in a Dell server. What do you check?",
+              "o": [
+                "The server's slot layout",
+                "The OpenManage version",
+                "The iDRAC license",
+                "The BIOS boot order"
+              ],
+              "a": 0,
+              "e": "Know which card sits in which slot, because cabling and drivers depend on it."
+            },
+            {
+              "q": "Which Dell tool monitors and updates many servers centrally?",
+              "o": [
+                "UCS Manager",
+                "OpenManage Enterprise",
+                "Onboard Administrator",
+                "iDRAC"
+              ],
+              "a": 1,
+              "e": "iDRAC is per server. OpenManage Enterprise manages fleets."
             }
           ]
         }
@@ -5717,6 +7169,30 @@ window.COURSE = {
               "a": 2,
               "e": "It's installed directly on the hardware."
             }
+          ],
+          "retry": [
+            {
+              "q": "Hosts, clusters and datastores are grouped under which top-level vCenter object?",
+              "o": [
+                "Folder",
+                "Portgroup",
+                "Resource pool",
+                "Datacenter"
+              ],
+              "a": 3,
+              "e": "The Datacenter is the top of the vCenter inventory."
+            },
+            {
+              "q": "What does a hypervisor do?",
+              "o": [
+                "Shares CPU, RAM, disk and network between VMs",
+                "Routes traffic between VLANs on the switch",
+                "Backs up VMs to a separate storage system",
+                "Stores VM snapshots on the datastore"
+              ],
+              "a": 0,
+              "e": "The hypervisor (ESXi) virtualizes the hardware for VMs."
+            }
           ]
         },
         {
@@ -5848,6 +7324,52 @@ window.COURSE = {
               "a": 1,
               "e": "VDS / dvSwitch."
             }
+          ],
+          "retry": [
+            {
+              "q": "What are vmnic0 and vmnic1 on an ESXi host?",
+              "o": [
+                "Physical NICs",
+                "VMkernel ports",
+                "VM network cards",
+                "Portgroups"
+              ],
+              "a": 0,
+              "e": "vmnics are the physical adapters, used as uplinks."
+            },
+            {
+              "q": "Which load-balancing method is the default on a vSwitch?",
+              "o": [
+                "Route based on originating port ID",
+                "Route based on IP hash",
+                "Route based on source MAC hash",
+                "Route based on physical NIC load"
+              ],
+              "a": 0,
+              "e": "Port ID: each virtual port is pinned to one uplink."
+            },
+            {
+              "q": "An uplink recovers after a failure. With Failback = Yes, what happens?",
+              "o": [
+                "Traffic returns to it",
+                "The host reboots",
+                "Traffic stays on the standby",
+                "The portgroup is deleted"
+              ],
+              "a": 0,
+              "e": "Failback moves traffic back to the recovered active uplink."
+            },
+            {
+              "q": "Where do VMs actually connect on a standard vSwitch?",
+              "o": [
+                "To the DCUI",
+                "To a VMkernel port",
+                "To a portgroup",
+                "Directly to a vmnic"
+              ],
+              "a": 2,
+              "e": "VMs connect to portgroups, which define the VLAN and policies."
+            }
           ]
         },
         {
@@ -5939,6 +7461,41 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Beacon probing catches failures beyond the first hop."
+            }
+          ],
+          "retry": [
+            {
+              "q": "A VM sends frames with a source MAC that differs from its assigned one, and they're dropped. Which policy is set to Reject?",
+              "o": [
+                "Forged Transmits",
+                "Promiscuous Mode",
+                "Traffic Shaping",
+                "Failback"
+              ],
+              "a": 0,
+              "e": "Forged Transmits checks outgoing frames' source MAC."
+            },
+            {
+              "q": "Limit a portgroup's average and peak bandwidth:",
+              "o": [
+                "Notify Switches",
+                "NIC Teaming",
+                "Traffic Shaping",
+                "Beacon Probing"
+              ],
+              "a": 2,
+              "e": "Traffic Shaping sets average/peak/burst limits."
+            },
+            {
+              "q": "In failover order, an adapter set to Unused…",
+              "o": [
+                "Carries traffic normally",
+                "Is used only for vMotion",
+                "Takes over first on failure",
+                "Is never used by that portgroup"
+              ],
+              "a": 3,
+              "e": "Active = in use, Standby = takes over, Unused = never used."
             }
           ]
         }
@@ -6257,6 +7814,52 @@ window.COURSE = {
               "a": 3,
               "e": "It reverts to its original state."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which datastore type puts VMware's own clustered filesystem on a block LUN?",
+              "o": [
+                "vSAN",
+                "VMFS",
+                "NFS",
+                "RDM"
+              ],
+              "a": 1,
+              "e": "ESXi formats block LUNs with VMFS."
+            },
+            {
+              "q": "Which virtual SCSI controller is best for heavy I/O workloads?",
+              "o": [
+                "BusLogic Parallel",
+                "VMware Paravirtual (PVSCSI)",
+                "IDE controller",
+                "LSI Logic Parallel"
+              ],
+              "a": 1,
+              "e": "PVSCSI has the lowest CPU overhead for high IOPS."
+            },
+            {
+              "q": "A thin disk on a VM can be converted to eager-zeroed thick with…",
+              "o": [
+                "Inflate (in the datastore browser)",
+                "Consolidate (snapshot menu)",
+                "Revert to current snapshot",
+                "Shrink (in VMware Tools)"
+              ],
+              "a": 0,
+              "e": "Inflate allocates and zeroes the whole disk."
+            },
+            {
+              "q": "Which SCSI Bus Sharing mode lets VMs on different hosts share a disk?",
+              "o": [
+                "Independent",
+                "None",
+                "Physical",
+                "Virtual"
+              ],
+              "a": 2,
+              "e": "Physical sharing works across hosts. Virtual sharing works only on the same host."
+            }
           ]
         },
         {
@@ -6328,6 +7931,41 @@ window.COURSE = {
               ],
               "a": 2,
               "e": "vmware.log in the VM folder."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which file holds a VM's hardware configuration?",
+              "o": [
+                ".vmsd",
+                ".log",
+                ".vswp",
+                ".vmx"
+              ],
+              "a": 3,
+              "e": ".vmx is the main config file."
+            },
+            {
+              "q": "Which file is created when you suspend a VM?",
+              "o": [
+                ".nvram",
+                ".vmss",
+                ".vmsn",
+                ".vmdk"
+              ],
+              "a": 1,
+              "e": ".vmss holds the suspended state."
+            },
+            {
+              "q": "After taking a snapshot, where do the VM's new writes go?",
+              "o": [
+                "To a delta file (vm-00000x.vmdk)",
+                "To the VM's .nvram file",
+                "To the base -flat.vmdk as usual",
+                "To the .vmsd snapshot database"
+              ],
+              "a": 0,
+              "e": "The base disk freezes and changes go to the delta disk."
             }
           ]
         }
@@ -6606,6 +8244,30 @@ window.COURSE = {
               "a": 1,
               "e": "Storage Policy Based Management."
             }
+          ],
+          "retry": [
+            {
+              "q": "A VM needs replicated, encrypted storage. What ensures it lands on a datastore that can do this?",
+              "o": [
+                "A host profile",
+                "EVC",
+                "A storage policy",
+                "DRS"
+              ],
+              "a": 2,
+              "e": "Storage policies describe the requirements and place VMs on compliant datastores."
+            },
+            {
+              "q": "Moving swap files to fast local SSD is set at which level?",
+              "o": [
+                "Cluster and host swap file settings",
+                "Only from the DCUI on each host",
+                "On the vSwitch's portgroup policy",
+                "Inside each VM's guest OS settings"
+              ],
+              "a": 0,
+              "e": "The cluster setting says 'specified by host', then each host picks the datastore."
+            }
           ]
         },
         {
@@ -6658,6 +8320,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "Host Profiles + compliance checks."
+            }
+          ],
+          "retry": [
+            {
+              "q": "List an ESXi host's network interfaces from the shell:",
+              "o": [
+                "ipconfig /all on the ESXi shell",
+                "netsh interface show on the host",
+                "esxcli network ip interface list",
+                "vmware-cmd --list-nics"
+              ],
+              "a": 2,
+              "e": "esxcli is the ESXi command-line toolset."
+            },
+            {
+              "q": "Lockdown mode on an ESXi host…",
+              "o": [
+                "Disables vMotion to and from it",
+                "Encrypts every VM on the host",
+                "Forces management through vCenter only",
+                "Powers off all running VMs"
+              ],
+              "a": 2,
+              "e": "Lockdown blocks direct host access to improve security."
             }
           ]
         },
@@ -6747,6 +8433,41 @@ window.COURSE = {
               "a": 3,
               "e": "Shares decide priority only when VMs compete for resources."
             }
+          ],
+          "retry": [
+            {
+              "q": "A VM must always get at least 8 GB of RAM. Use…",
+              "o": [
+                "A reservation",
+                "A limit",
+                "Shares",
+                "Ballooning"
+              ],
+              "a": 0,
+              "e": "Reservations guarantee a minimum."
+            },
+            {
+              "q": "Which single-file format bundles a VM for import elsewhere?",
+              "o": [
+                "VMSD",
+                "OVA",
+                "VMX",
+                "OVF descriptor only"
+              ],
+              "a": 1,
+              "e": "OVA = an OVF package in one tar file."
+            },
+            {
+              "q": "Which option shuts a VM down gracefully?",
+              "o": [
+                "Power Off",
+                "Shut Down Guest OS",
+                "Reset",
+                "Suspend"
+              ],
+              "a": 1,
+              "e": "Shut Down Guest asks the OS (via VMware Tools). Power Off is like pulling the cord."
+            }
           ]
         },
         {
@@ -6818,6 +8539,41 @@ window.COURSE = {
               ],
               "a": 1,
               "e": "EVC sets a common CPU baseline."
+            }
+          ],
+          "retry": [
+            {
+              "q": "Which feature keeps a VM running with zero downtime if its host dies?",
+              "o": [
+                "EVC",
+                "HA",
+                "DRS",
+                "Fault Tolerance"
+              ],
+              "a": 3,
+              "e": "FT keeps a live shadow VM in lockstep. HA restarts the VM, so there's some downtime."
+            },
+            {
+              "q": "What helps HA tell a dead host from an isolated one?",
+              "o": [
+                "Heartbeat datastores",
+                "Shares",
+                "EVC",
+                "Affinity rules"
+              ],
+              "a": 0,
+              "e": "Datastore heartbeats are a second channel besides the network."
+            },
+            {
+              "q": "What does HA admission control do?",
+              "o": [
+                "Caps how much memory each VM can use",
+                "Encrypts vMotion traffic between hosts",
+                "Reserves capacity so failed VMs can restart",
+                "Balances CPU load across all hosts"
+              ],
+              "a": 2,
+              "e": "It blocks power-ons that would leave no room for failover."
             }
           ]
         }
@@ -7178,6 +8934,41 @@ window.COURSE = {
               "a": 0,
               "e": "CommServe."
             }
+          ],
+          "retry": [
+            {
+              "q": "Which component runs on the protected server and knows how to back up SQL?",
+              "o": [
+                "The CommServe",
+                "The MediaAgent",
+                "The SQL agent (iDataAgent)",
+                "The disk library"
+              ],
+              "a": 2,
+              "e": "Agents are data-type specific and installed on the client."
+            },
+            {
+              "q": "Where are backup schedules defined?",
+              "o": [
+                "Client group only",
+                "Disk library",
+                "Schedule policy",
+                "Storage policy"
+              ],
+              "a": 2,
+              "e": "Schedule policy = when. Storage policy = where and how long."
+            },
+            {
+              "q": "Which console is Commvault's modern web UI?",
+              "o": [
+                "MediaAgent",
+                "Command Center",
+                "HyperScale",
+                "CommCell Console"
+              ],
+              "a": 1,
+              "e": "Command Center is the web UI. CommCell Console is the classic Java one."
+            }
           ]
         },
         {
@@ -7222,6 +9013,30 @@ window.COURSE = {
               ],
               "a": 0,
               "e": "IntelliSnap."
+            }
+          ],
+          "retry": [
+            {
+              "q": "A backup that captures the disk as if the power were pulled is…",
+              "o": [
+                "Transaction log",
+                "Application aware",
+                "Synthetic full",
+                "Crash consistent"
+              ],
+              "a": 3,
+              "e": "No application coordination, just the disk state."
+            },
+            {
+              "q": "Classic backup where data is read from the client and sent through the MediaAgent:",
+              "o": [
+                "IntelliSnap",
+                "Array replication",
+                "Streaming backup",
+                "Live mount"
+              ],
+              "a": 2,
+              "e": "Streaming is the traditional data path."
             }
           ]
         },
@@ -7272,6 +9087,30 @@ window.COURSE = {
               "a": 0,
               "e": "Log backups enable point-in-time recovery between fulls."
             }
+          ],
+          "retry": [
+            {
+              "q": "Bring a VM up straight from backup storage while the data copies back in the background:",
+              "o": [
+                "Live recovery",
+                "Synthetic full",
+                "Data aging",
+                "In-place restore"
+              ],
+              "a": 0,
+              "e": "Live recovery gives fast RTO while data migrates."
+            },
+            {
+              "q": "Overwrite the original server with the restored data:",
+              "o": [
+                "In-place restore",
+                "Cluster backup",
+                "Live mount",
+                "Out-of-place restore"
+              ],
+              "a": 0,
+              "e": "In place = same location, overwriting the original."
+            }
           ]
         },
         {
@@ -7312,6 +9151,30 @@ window.COURSE = {
               ],
               "a": 1,
               "e": "Global Deduplication Policy."
+            }
+          ],
+          "retry": [
+            {
+              "q": "IntelliSnap needs storage arrays to be registered in…",
+              "o": [
+                "The client group",
+                "Data aging",
+                "Array management",
+                "The schedule policy"
+              ],
+              "a": 2,
+              "e": "Register arrays so Commvault can drive their snapshots."
+            },
+            {
+              "q": "Backup jobs past their retention are deleted by…",
+              "o": [
+                "Data aging",
+                "Live mount",
+                "IntelliSnap",
+                "Synthetic full"
+              ],
+              "a": 0,
+              "e": "Data aging prunes expired jobs and frees space."
             }
           ]
         }
