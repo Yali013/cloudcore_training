@@ -1235,42 +1235,42 @@ window.COURSE = {
         {
           "type": "connections",
           "title": "Network Connections",
-          "desc": "Find 4 groups of 4. Select four tiles and hit Submit. 4 mistakes allowed!",
+          "desc": "Find 4 groups of 4. Select four tiles and hit Submit. 4 mistakes allowed! Tip: start with the group you're surest about.",
           "groups": [
             {
-              "name": "___ table",
+              "name": "Network devices",
               "items": [
-                "MAC",
-                "ROUTING",
-                "ARP",
-                "NAT"
+                "ROUTER",
+                "SWITCH",
+                "HUB",
+                "FIREWALL"
               ]
             },
             {
-              "name": "Runs over UDP",
+              "name": "Well-known port numbers",
               "items": [
-                "DNS QUERY",
-                "NTP",
+                "22",
+                "53",
+                "80",
+                "443"
+              ]
+            },
+            {
+              "name": "Addressing",
+              "items": [
+                "IP ADDRESS",
+                "MAC ADDRESS",
+                "SUBNET MASK",
+                "DEFAULT GATEWAY"
+              ]
+            },
+            {
+              "name": "Core network services",
+              "items": [
+                "DNS",
                 "DHCP",
-                "TFTP"
-              ]
-            },
-            {
-              "name": "Runs over TCP",
-              "items": [
-                "SSH",
-                "RDP",
-                "TELNET",
-                "HTTPS"
-              ]
-            },
-            {
-              "name": "Layer 2 link & loop tech",
-              "items": [
-                "STP",
-                "LACP",
-                "TRUNK",
-                "VLAN"
+                "NTP",
+                "NAT"
               ]
             }
           ]
@@ -2241,42 +2241,42 @@ window.COURSE = {
         {
           "type": "connections",
           "title": "Shell Connections",
-          "desc": "Find 4 groups of 4. Select four tiles and hit Submit. 4 mistakes allowed!",
+          "desc": "Find 4 groups of 4. Select four tiles and hit Submit. 4 mistakes allowed! Tip: start with the group you're surest about.",
           "groups": [
             {
-              "name": "Read part of a file",
+              "name": "Directories under /",
               "items": [
+                "/ETC",
+                "/VAR",
+                "/HOME",
+                "/BOOT"
+              ]
+            },
+            {
+              "name": "Show a file's contents",
+              "items": [
+                "CAT",
                 "HEAD",
                 "TAIL",
-                "LESS",
-                "MORE"
+                "LESS"
               ]
             },
             {
-              "name": "Search & filter",
-              "items": [
-                "GREP",
-                "FIND",
-                "SORT",
-                "WHICH"
-              ]
-            },
-            {
-              "name": "Permissions & identity",
+              "name": "Permissions & users",
               "items": [
                 "CHMOD",
                 "CHOWN",
                 "SUDO",
-                "SU"
+                "USERADD"
               ]
             },
             {
-              "name": "LVM building blocks",
+              "name": "Networking tools",
               "items": [
-                "PV",
-                "VG",
-                "LV",
-                "LVEXTEND"
+                "PING",
+                "SSH",
+                "NSLOOKUP",
+                "TCPDUMP"
               ]
             }
           ]
