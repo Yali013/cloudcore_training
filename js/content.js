@@ -16,6 +16,8 @@
  *                url?, desc, steps?: [..], activities?: [..] }
  *   test     = { url, questions: [ same as quiz ],
  *                written: [{ q, parts?: [..], pre?, bonus?, section? }] }  -> open questions the trainee answers in writing
+ *              In the published file the written tests are encrypted in COURSE.testVault and the
+ *              chapter only says locked: true. Unlock them in the site, edit, then Export (re-encrypts).
  *   activity = { type: "sort" | "pick" | "terminal" | "raid" | "order" | "match" | "memory"
  *                       | "truefalse" | "fill" | "subnet" | "chmod" | "blitz"
  *                       | "connections" | "wordguess" | "pinpoint", ... }
@@ -1436,92 +1438,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Explain the 7-layer OSI model and the role of each layer."
-          },
-          {
-            "q": "What is a switch? What's the difference between a switch and a repeater? And between a switch and a hub?"
-          },
-          {
-            "q": "How can a computer find another computer's MAC address using its IP? How can it find another computer's IP using its MAC?"
-          },
-          {
-            "q": "What is a router? What is its role?"
-          },
-          {
-            "q": "What is TCP/IP? Explain the differences between TCP and UDP."
-          },
-          {
-            "q": "Give an example of 2 routing protocols and compare them."
-          },
-          {
-            "q": "What is a DHCP server? What is the DHCP protocol? Can a DHCP request pass through a router?"
-          },
-          {
-            "q": "Explain Layer 4. What does Layer 4 add on top of Layer 3?"
-          },
-          {
-            "q": "What is a subnet mask and what is it used for?",
-            "parts": [
-              "What is the network ID and what is it used for?",
-              "If my IP address is 180.111.44.22 and the subnet mask is 255.255.255.0, which CLASS am I in?"
-            ]
-          },
-          {
-            "q": "What is a port? Why does it exist?",
-            "parts": [
-              "Explain the term \"socket\"."
-            ]
-          },
-          {
-            "q": "What is the ICMP protocol?"
-          },
-          {
-            "q": "Briefly explain the following protocols:",
-            "parts": [
-              "Telnet and FTP. What is their weakness?",
-              "SSH",
-              "HTTP / HTTPS"
-            ]
-          },
-          {
-            "q": "What is a VLAN? How do VLANs work? Where are they defined? Why do we use VLANs?"
-          },
-          {
-            "q": "Describe the encapsulation process as data moves between the layers, in order."
-          },
-          {
-            "q": "What is a HOP? Which protocol lets you see the hops?"
-          },
-          {
-            "q": "What is NAT? Why is it needed?"
-          },
-          {
-            "q": "My computer has the following routing table. Which route will be chosen to reach 192.168.1.15, and why?",
-            "pre": "IPv4 source       192.168.40.2\nIPv4 destination  192.168.1.15\n\nActive routes:\nDestination     Subnet mask      Interface\n192.168.40.0    255.255.255.0    192.168.40.215\n192.168.0.0     255.255.0.0      192.168.40.201\n192.0.0.0       255.0.0.0        192.168.250.253"
-          },
-          {
-            "q": "Explain the APIPA protocol and list its address range."
-          },
-          {
-            "q": "What is special about the following IP addresses?",
-            "parts": [
-              "127.0.0.1",
-              "0.0.0.0"
-            ]
-          },
-          {
-            "q": "Explain everything you know about firewalls.",
-            "parts": [
-              "Which team do you contact when you want to open firewall rules?"
-            ]
-          },
-          {
-            "q": "What is a VPN?",
-            "bonus": true
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -2491,76 +2408,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Briefly explain the architecture of the Unix filesystem."
-          },
-          {
-            "q": "What is RPM, what is it used for, and how is it related to yum?"
-          },
-          {
-            "q": "Explain the types of permissions, how they are represented, and how you can see a file's permissions."
-          },
-          {
-            "q": "Briefly explain each stage of the BOOT process (BIOS, MBR, GRUB, Kernel, Init)."
-          },
-          {
-            "q": "What is an i-node? What does each i-node represent?"
-          },
-          {
-            "q": "What's the difference between a hardlink and a softlink?"
-          },
-          {
-            "q": "Sticky bit: what is it?"
-          },
-          {
-            "q": "Explain what vi is, what its two modes are, and give an example of one of its commands."
-          },
-          {
-            "q": "Explain sudo and su."
-          },
-          {
-            "q": "What is LVM and what is it used for? Draw its architecture."
-          },
-          {
-            "q": "Briefly explain what each command does:",
-            "parts": [
-              "df",
-              "chmod 750 file",
-              "mount",
-              "ps",
-              "ls",
-              "cat",
-              "cd",
-              "top",
-              "mkdir",
-              "netstat",
-              "nslookup",
-              "| (pipeline)",
-              "grep"
-            ]
-          },
-          {
-            "q": "Important directories and files in Linux. Explain each one:",
-            "parts": [
-              "/bin",
-              "/etc",
-              "/ vs /root",
-              "/etc/hosts",
-              "/etc/passwd",
-              "/var/log"
-            ]
-          },
-          {
-            "q": "Which command would you use…",
-            "parts": [
-              "…to find information about my network card?",
-              "…to get information about a specific command?",
-              "…to schedule future commands?",
-              "…to find the current path?"
-            ]
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -3327,71 +3175,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Briefly explain the following terms:",
-            "parts": [
-              "Domain",
-              "Forest",
-              "Site",
-              "Active Directory"
-            ]
-          },
-          {
-            "q": "Explain what DNS is and the meaning of the following terms:",
-            "parts": [
-              "A / Host / AAAA record",
-              "Alias record",
-              "Forward lookup zone",
-              "Reverse lookup zone"
-            ]
-          },
-          {
-            "q": "What is a GPO? What can you configure with a GPO? What can GPO settings be applied to? What is the GPO management tool called?"
-          },
-          {
-            "q": "Explain what DFSR is."
-          },
-          {
-            "q": "Briefly explain the following tools:",
-            "parts": [
-              "mstsc",
-              "Task Manager (taskmgr)",
-              "eventvwr",
-              "dsa.msc",
-              "regedit"
-            ]
-          },
-          {
-            "q": "Briefly explain the following commands:",
-            "parts": [
-              "netstat",
-              "ipconfig",
-              "ping",
-              "traceroute (tracert)",
-              "runas"
-            ]
-          },
-          {
-            "q": "Explain what a process is and what a service is. What's the difference between them?"
-          },
-          {
-            "q": "Explain what IIS is and what SharePoint is. What's the connection between the two?"
-          },
-          {
-            "q": "Explain what SCCM is."
-          },
-          {
-            "q": "What's the difference between a LOCAL ADMIN and a DOMAIN ADMIN?"
-          },
-          {
-            "q": "Explain what a DC is and what it's used for."
-          },
-          {
-            "q": "Explain what Exchange is. What is the client-side application called, and which protocol does it use to access Exchange? What is the role of the DAG?",
-            "bonus": true
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -4904,103 +4688,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Explain what central storage is, and what the old storage model was. List the advantages and disadvantages of each model."
-          },
-          {
-            "q": "NAS vs. SAN vs. Object Storage:",
-            "parts": [
-              "Briefly explain each storage model.",
-              "Give uses for NAS, SAN and Object Storage.",
-              "When would you choose NAS? When SAN? When Object Storage?"
-            ]
-          },
-          {
-            "q": "Storage protocols: briefly explain each protocol.",
-            "parts": [
-              "FC",
-              "FCoE",
-              "CIFS",
-              "NFS",
-              "iSCSI",
-              "S3"
-            ]
-          },
-          {
-            "q": "Explain the following terms:",
-            "parts": [
-              "SAN switches",
-              "HBA",
-              "Snapshot: explain Copy on Write (COW) and Redirect on Write (ROW) separately",
-              "Clones",
-              "Storage Replication",
-              "Boot From SAN"
-            ]
-          },
-          {
-            "q": "RAID arrays: explain all the levels."
-          },
-          {
-            "q": "Briefly explain what a cache is."
-          },
-          {
-            "q": "Briefly explain what a read miss and a read hit are."
-          },
-          {
-            "q": "What is IO?"
-          },
-          {
-            "q": "Disks:",
-            "parts": [
-              "Explain the structure and operating principle of a hard disk, including: Spindle, Head, Cylinder, Track, Sector",
-              "Explain the structure and operating principle of a flash disk.",
-              "Explain the following disk types, their differences, advantages and disadvantages, and what we use each one for: SATA, SAS, SSD, NVMe"
-            ]
-          },
-          {
-            "q": "Explain what unstructured data and structured data are, and give examples of each."
-          },
-          {
-            "q": "Explain the term storage tiering. What is it used for? List its advantages and disadvantages for the product."
-          },
-          {
-            "q": "Explain the deduplication mechanism.",
-            "parts": [
-              "What's the difference between inline dedup and post-process dedup? Explain how each one works.",
-              "What are the advantages of using dedup?"
-            ]
-          },
-          {
-            "q": "Explain what compression is and how the mechanism works."
-          },
-          {
-            "q": "Explain what compaction is."
-          },
-          {
-            "q": "Give two examples of data you would run dedup on, and two examples of data you would run compression on."
-          },
-          {
-            "q": "Explain what thin provisioning and thick provisioning are, the difference between them, and the advantages and disadvantages of each."
-          },
-          {
-            "q": "Briefly explain the following terms:",
-            "parts": [
-              "What is a hot backup and what is a cold backup?",
-              "What is a full backup?",
-              "What is an incremental backup? When do we run it?",
-              "What is a differential backup?"
-            ]
-          },
-          {
-            "q": "Networking. Explain the following terms:",
-            "parts": [
-              "Link aggregation: when do we use it, and which implementation methods exist?",
-              "NPIV: when do we use it?",
-              "MPIO"
-            ]
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -6123,154 +5811,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Explain the following terms:",
-            "parts": [
-              "What the controller is.",
-              "FAS vs. AFF vs. C Series.",
-              "The role of WAFL and how it works.",
-              "What NVRAM is. Why is there a battery for it?",
-              "The ways to connect to the storage system and what each is used for (SP, ssh, console).",
-              "What the root vol is and what it's used for.",
-              "Which files are in the system's etc?",
-              "What the RC file is used for."
-            ]
-          },
-          {
-            "q": "What is a LIF? Explain the differences between LACP, multi and single."
-          },
-          {
-            "q": "Which RAID types can be used in NetApp? What's the difference between them?",
-            "parts": [
-              "How each RAID type is used, and the advantages and disadvantages of each.",
-              "What raid size is.",
-              "Which RAID type is used most?"
-            ]
-          },
-          {
-            "q": "Explain the following terms:",
-            "parts": [
-              "Aggregate",
-              "Volume",
-              "Qtree",
-              "LUN"
-            ]
-          },
-          {
-            "q": "Explain the process of building an aggregate (starting from assigning the disks to the controller)."
-          },
-          {
-            "q": "What is an initiator group (igroup)?"
-          },
-          {
-            "q": "Why do we define a LUN according to a specific operating system?"
-          },
-          {
-            "q": "Explain the process of mapping a LUN to a server (including the SAN switch settings)."
-          },
-          {
-            "q": "What are qtrees used for? What's the difference between a qtree and a regular folder?"
-          },
-          {
-            "q": "What is a snapshot? At which level are snapshots kept?"
-          },
-          {
-            "q": "What's the difference between Copy on Write and Redirect on Write?"
-          },
-          {
-            "q": "What is a quota?"
-          },
-          {
-            "q": "What's the difference between CIFS shares and exports?"
-          },
-          {
-            "q": "In which file in the etc directory are the exports and shares saved?"
-          },
-          {
-            "q": "What's the difference in how writes are acknowledged (memory) between a LUN and an export / CIFS share?"
-          },
-          {
-            "q": "Explain the terms: HA pair, Giveback, Takeover."
-          },
-          {
-            "q": "Explain what a disk shelf is, draw how it's cabled to the storage controllers, and explain what a module is."
-          },
-          {
-            "q": "Explain what cluster interconnect and intercluster connections are."
-          },
-          {
-            "q": "List the main differences between CDOT and 7-mode (at least three)."
-          },
-          {
-            "q": "What is SnapVault, and what is SnapMirror? What's the difference? (When would you use each one?)"
-          },
-          {
-            "q": "Explain the SVM DR process."
-          },
-          {
-            "section": "CLI practice: write down the commands you used for each exercise.",
-            "q": "What is the machine's serial number?"
-          },
-          {
-            "q": "What is the Data ONTAP version?"
-          },
-          {
-            "q": "How many disk shelves does the controller have, and of what type?"
-          },
-          {
-            "q": "How many spare disks are in the system, and of what type?"
-          },
-          {
-            "q": "How do you see the disks that don't belong to the system?"
-          },
-          {
-            "q": "How many RAID groups are in the system? What is the raid_size of each group?"
-          },
-          {
-            "q": "Show the licenses that exist in the system."
-          },
-          {
-            "q": "Show the domain and network details:",
-            "parts": [
-              "Domain name",
-              "DNS",
-              "IP",
-              "Subnet",
-              "Gateway"
-            ]
-          },
-          {
-            "q": "What is the command for managing users in the system?"
-          },
-          {
-            "q": "Create a LUN and connect it to a server (including creating the igroup)."
-          },
-          {
-            "q": "How do you check which LUN ID is mapped to the igroup?"
-          },
-          {
-            "q": "How do you see which LUNs sit on a specific vol?"
-          },
-          {
-            "q": "Create an export and set snapshots on it twice a day, weekly and monthly."
-          },
-          {
-            "q": "Delete the LUN, and the vols you created for the export and the CIFS shares."
-          },
-          {
-            "q": "We mapped a LUN to a certain igroup, but the server still doesn't see the LUN. What could the problem be?"
-          },
-          {
-            "q": "How do you see a list of the vols sitting on a specific aggr?"
-          },
-          {
-            "q": "Create an ifgrp on two ports with LACP, and create a VLAN on it."
-          },
-          {
-            "q": "How do you see the WWNs connected to NetApp that don't have an igroup?"
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -6770,51 +6311,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "What is a WWNN? What is a WWPN? What's the difference?"
-          },
-          {
-            "q": "What is a GBIC? Which types of GBIC exist? Can you insert a 10g GBIC into a port on a 1g switch?"
-          },
-          {
-            "q": "What is an HBA? Can a server with 2 HBAs be connected to the same switch? What is unique about each HBA?"
-          },
-          {
-            "q": "What is NPIV? In which case would you use it? Must you use NPIV?"
-          },
-          {
-            "q": "What is an ISL? Why do you need it if you can use NPIV?"
-          },
-          {
-            "q": "What is ALUA? Where do you need to enable it? Which protocol does it use?"
-          },
-          {
-            "q": "Why do we use aliases? What do you put in an alias?"
-          },
-          {
-            "q": "What is a zone? What's the difference between hard zoning and soft zoning? Which one do we use?"
-          },
-          {
-            "q": "Can you put only an alias into a zone? If not, what else?"
-          },
-          {
-            "q": "What is a vSAN?",
-            "parts": [
-              "What is it used for?",
-              "How and where is it defined?"
-            ]
-          },
-          {
-            "q": "What is a Supervisor? Can the switch work without a Supervisor?"
-          },
-          {
-            "q": "How many members are in each zone? What's the maximum number allowed in a zone?"
-          },
-          {
-            "q": "What is the naming standard for zones and aliases?"
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -7137,47 +6634,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "What is an object?"
-          },
-          {
-            "q": "What information is stored in the metadata?"
-          },
-          {
-            "q": "What kind of data would we want to store in object storage?"
-          },
-          {
-            "q": "Compare object storage, SAN and NAS (volumes, data types, protocols…)."
-          },
-          {
-            "q": "What is the hierarchical structure of the storage presented to a user of the S3 protocol?"
-          },
-          {
-            "q": "Describe the process that happens in StorageGRID when a user wants to retrieve an object."
-          },
-          {
-            "q": "Explain the S3 and Swift protocols."
-          },
-          {
-            "q": "What is erasure coding?"
-          },
-          {
-            "q": "What is an ILM policy and what does it contain?"
-          },
-          {
-            "q": "Explain the uses of the Cassandra DB in StorageGRID."
-          },
-          {
-            "q": "What is an Admin Node? Which services run on it?"
-          },
-          {
-            "q": "What is a Storage Node? Which services run on it?"
-          },
-          {
-            "q": "What is a Gateway Node? Which services run on it?"
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -8266,64 +7723,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Explain the differences between a vSwitch and a dvSwitch. What is an uplink?"
-          },
-          {
-            "q": "How is it recommended to configure the port on the physical switch that the host connects to (Access / Trunk), and why?"
-          },
-          {
-            "q": "Explain the differences between a VMkernel port and a virtual machine port."
-          },
-          {
-            "q": "What is a port group? What do the ports in it share? Which types of port groups exist?"
-          },
-          {
-            "q": "Can a virtual network card be connected to more than one port group? Explain."
-          },
-          {
-            "q": "Fill in the table: for each case, does the traffic pass through the physical switch or not?",
-            "pre": "Case                              | Same segment | Different segment\n----------------------------------+--------------+------------------\nVM to VM on the same host         |              |\nVM to VM on a different host      |              |"
-          },
-          {
-            "q": "Scenario: two blade systems, each with one blade (no network settings) and one VM on each blade; a Nexus 5k switch with basic settings; and a Checkpoint router with basic settings. Explain the whole process you must carry out so that machine A can communicate with machine B. The machines' IP addresses are 190.12.34.56 and 190.12.34.65.",
-            "parts": [
-              "Step 1",
-              "Step 2 (hint: uplinks from each NX5K to the router)",
-              "Step 3",
-              "Step 4",
-              "Step 5",
-              "Step 6"
-            ]
-          },
-          {
-            "q": "What is load balancing? Why is it needed? Which load-balancing types do you know? (at least 3)"
-          },
-          {
-            "q": "Explain each of the following terms:",
-            "parts": [
-              "Promiscuous Mode",
-              "Forged Transmits",
-              "MAC Changes",
-              "Traffic Shaping",
-              "Network Failover Detection",
-              "Notify Switches",
-              "Failback",
-              "Failover Order (Active / Standby / Unused)"
-            ]
-          },
-          {
-            "q": "For each scenario, explain whether the communication of the VMs, the ESXi hosts and the vCenter is affected (assume the vCenter is physical):",
-            "parts": [
-              "Someone unplugs a network cable from an ESX.",
-              "Someone unplugs the vCenter's network cable.",
-              "Someone turns off the switch.",
-              "Someone turns off the vCenter.",
-              "Someone turns off the ESX."
-            ]
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -8807,45 +8207,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Explain the virtual disk types (Thin / Thick Lazy Zeroed / Thick Eager Zeroed)."
-          },
-          {
-            "q": "Explain the disk modes Independent Persistent / Independent Non-Persistent."
-          },
-          {
-            "q": "Explain the SCSI Bus Sharing types: Physical / Virtual / None."
-          },
-          {
-            "q": "Which RDM types can be used in a virtual environment? What are the implications of using RDM?"
-          },
-          {
-            "q": "Explain the different Virtual SCSI adapter types."
-          },
-          {
-            "q": "According to the CloudCore team standard, we want to share disks between 2 Oracle RAC servers. List all the settings required to do this. Why don't we use SCSI Bus Sharing?"
-          },
-          {
-            "q": "Complete the table of the files that make up a virtual machine (estimated size, binary or text). Also explain in detail the role of each file in the table.",
-            "pre": "File name          | Estimated size | Binary / Text\n-------------------+----------------+--------------\nVMX                |                |\nVMDK (Descriptor)  |                |\nVMDK (Flat)        |                |\nVMDK (Delta)       |                |\nVMSN               |                |\nVMSD               |                |\nVMSS               |                |\nNVRAM              |                |"
-          },
-          {
-            "q": "Explain the VSWP file in detail. What will its size be? How can you move it? What effect does a memory reservation have on it?"
-          },
-          {
-            "q": "Explain the multi-pathing methods. Which one would we use, and why? What happens if a path fails?"
-          },
-          {
-            "q": "List the steps you must carry out to present an NFS datastore to an ESXi host in your environment."
-          },
-          {
-            "q": "What is the connection between a LUN and a datastore?"
-          },
-          {
-            "q": "What is the difference between a VMFS datastore and an NFS datastore? Elaborate!"
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -9489,110 +8851,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "Which of the following actions can you perform while the virtual machine is powered on?",
-            "parts": [
-              "Add a hard disk",
-              "Remove a floppy",
-              "Remove vCPUs",
-              "Add a network adapter",
-              "Remove RAM",
-              "Add parameters to the vmx"
-            ]
-          },
-          {
-            "q": "Explain what VMware Tools are and what they provide. Detail what can and can't be done when they are not installed."
-          },
-          {
-            "q": "Where is the VMware Tools installation located? Give 3 ways to check that VMware Tools is installed on a VM running Windows."
-          },
-          {
-            "q": "Which command do you run to restart the Management Agents on ESXi? How can you do it in the GUI?"
-          },
-          {
-            "q": "What are the 4 steps ESXi takes to deal with memory contention?"
-          },
-          {
-            "q": "Explain the Shares mechanism. How does it work? When do we use it?"
-          },
-          {
-            "q": "What are Limit and Reservation? What is a Resource Pool? By what criteria would we split into different Resource Pools?"
-          },
-          {
-            "q": "Explain HA and Admission Control in detail. What's the difference between HA and FT?"
-          },
-          {
-            "q": "Explain DRS in detail. Which modes does it have? What are DRS Rules?"
-          },
-          {
-            "q": "What's the difference between Cold Migration and Hot Migration?"
-          },
-          {
-            "q": "What is Enhanced vMotion?"
-          },
-          {
-            "q": "What is Enhanced vMotion Compatibility?"
-          },
-          {
-            "q": "In a project with a virtual vCenter and 4 ESXi hosts, someone pressed the main power switch and shut down the whole hall. After the power came back, you can't connect to the vCenter. Detail the full process you need to carry out until you can connect to the vCenter."
-          },
-          {
-            "q": "Following the previous question: how do you manage ESXi servers without vCenter? What can't you do while the vCenter is down?"
-          },
-          {
-            "q": "Using the vmx file of a virtual machine (your trainer will give it to you), fill in the following details (if there are 2, refer to only 1):",
-            "parts": [
-              "VM name",
-              "VM version",
-              "RAM size",
-              "Name of the port group it's connected to",
-              "MAC address of the network card",
-              "Operating system type (e.g. rhel5-64)",
-              "Does the machine have shared disks? Explain."
-            ]
-          },
-          {
-            "q": "What's the difference between a VM and a Template? Where does a Customization Specification come in?"
-          },
-          {
-            "q": "What is the role of the Master in FDM? Why is it needed? How is it chosen?"
-          },
-          {
-            "q": "What is Datastore Heartbeating? What's different about the datastores chosen for heartbeats?"
-          },
-          {
-            "q": "What is Isolation Response? What do we do in such a situation?"
-          },
-          {
-            "q": "Here's the name of a datastore in our environment: na_hp_2_lnx_2_ds3. Explain what each part of the name represents. Also, why would we want to separate datastores? (not related to space limits)"
-          },
-          {
-            "q": "Explain fully how a VMware snapshot works. What's the problem with expanding the disk of a VM that has a snapshot?"
-          },
-          {
-            "q": "In which ways can you power off a virtual machine? List at least 3."
-          },
-          {
-            "q": "What's the order of operations when we want to move a virtual machine between two completely independent environments (separate vCenter, separate storage, separate network)?"
-          },
-          {
-            "q": "True or false? Explain each answer.",
-            "parts": [
-              "We moved a virtual machine between two independent environments and didn't change any settings. The machine's vswp file will always be saved in the datastore where the VMX is.",
-              "On an ESXi host with 128 GB RAM, you can run 20 VMs with 8 GB RAM each.",
-              "On an ESXi host that sees a 128 GB datastore, you can run 20 VMs, each with an 8 GB eager-zeroed disk (on that datastore).",
-              "You can manage clusters from several different physical sites.",
-              "If the VMware Tools service is unavailable or stopped, you can't connect to the ESXi host.",
-              "You can do Enhanced vMotion through the vSphere Client within the same cluster, for a powered-on machine.",
-              "You can do Enhanced vMotion through the Web Client between clusters, for a powered-on machine.",
-              "An ESXi host can be connected directly to a Datacenter; it doesn't have to be part of a cluster."
-            ]
-          },
-          {
-            "q": "A system's support center called you and claimed their VM is starved of RAM. You connected to the server and saw that it really is using the maximum it sees (6 GB). You checked the server's settings and saw it's allocated 8 GB. How is that possible?"
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -10135,54 +9394,7 @@ window.COURSE = {
       "test": {
         "url": "",
         "questions": [],
-        "written": [
-          {
-            "q": "What is Commvault?"
-          },
-          {
-            "q": "What is a backup? What is an Application-Aware Backup? What is a restore?"
-          },
-          {
-            "q": "Explain the following terms:",
-            "parts": [
-              "CommServe",
-              "Media Agent",
-              "Disk Library",
-              "Storage Policy",
-              "Client",
-              "Agent",
-              "IntelliSnap",
-              "Schedule Policy"
-            ]
-          },
-          {
-            "q": "Briefly describe how a backup process is carried out."
-          },
-          {
-            "q": "What is the Virtual Server Agent?"
-          },
-          {
-            "q": "What is a Crash Consistent backup?"
-          },
-          {
-            "q": "How is an IntelliSnap restore carried out? How does it interface with the storage arrays?"
-          },
-          {
-            "q": "Why does an Availability Group client type exist? Which DB is it used for?"
-          },
-          {
-            "q": "Which restore type do we use when we want to restore something for a short time?"
-          },
-          {
-            "q": "What's the difference between a Plan and a Storage Policy plus Schedule Policy?"
-          },
-          {
-            "q": "What's the difference between Command Center and the CommCell Console?"
-          },
-          {
-            "q": "Explain the process that happens when you run a restore with Live Recovery."
-          }
-        ]
+        "locked": true
       }
     },
     {
@@ -10236,5 +9448,13 @@ window.COURSE = {
       ],
       "test": null
     }
-  ]
+  ],
+  "testVault": {
+    "v": 1,
+    "kdf": "PBKDF2-SHA256",
+    "iter": 250000,
+    "salt": "mpjIx1TX0du4KnADGid4kg==",
+    "iv": "GS4dPicjYlVEgZcN",
+    "data": "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"
+  }
 };

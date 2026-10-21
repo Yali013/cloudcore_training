@@ -53,6 +53,8 @@ Advanced edits (e.g. the mini-games) go through **{ } Edit chapter JSON** or **{
 ### Chapter tests
 
 The trainers' **written tests** are built in (chapters 2–8 and 10–13; Hardware has none yet), translated to English.
+
+**🔒 The tests are password-protected.** In `js/content.js` they're encrypted (AES-256-GCM, key derived from the password with PBKDF2-SHA256, 250k iterations), so they can't be read from the source. The password is not stored anywhere in the repo; trainers hand it out. Entering it unlocks all tests for that browser tab session. Trainees' saved answers are kept regardless of the lock. To edit the tests, unlock them, use Edit mode, then **Export content.js**: the tests are re-encrypted automatically.
 - Trainees type their answers per question (with a/b/c sub-questions). Answers **autosave** per trainee.
 - Trainees click **Submit for review**, and send the answers with **Download my answers** (a .txt file) or with their exported progress file. A trainer who imports the progress file can switch to that trainee and read the answers on the test page.
 - Submitting completes the chapter's test step.

@@ -23,6 +23,7 @@
   const KEY_PROFILES = 'cca_profiles';
   const progKey = (id) => 'cca_progress_' + id;
   let course = store.get(KEY_EDITS) || clone(window.COURSE);
+  if (!course.testVault && window.COURSE.testVault) course.testVault = window.COURSE.testVault;
   let hasEdits = !!store.get(KEY_EDITS);
   const emptyProgress = () => ({ xp: 0, flip: {}, qa: {}, quiz: {}, quizFailed: {}, retryUsed: {}, act: {}, lab: {}, labxp: {}, checks: {}, test: {}, blitz: {}, wg: {}, written: {}, sound: false });
   // Trainee profiles: no auth, just a name per person, each with its own progress in this browser.
@@ -36,6 +37,55 @@
   let ui = { runs: {}, act: {}, meta: {}, flipped: {}, focusTerm: null };
   const resetUi = () => { ui = { runs: {}, act: {}, meta: {}, flipped: {}, focusTerm: null }; };
 
+
+  // ---------- test vault ----------
+  // The written tests are encrypted in content.js (AES-256-GCM, key from the password via PBKDF2-SHA256).
+  // The password is never stored in the site; once entered it unlocks the tests for this browser tab session.
+  const VAULT_ITER = 250000;
+  const TESTS_OPEN = 'cca_tests_open';
+  const u8ToB64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+  const b64ToU8 = (b) => Uint8Array.from(atob(b), (c) => c.charCodeAt(0));
+  async function vaultKey(pw, salt, iter) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function vaultOpen(vault, pw) {
+    const key = await vaultKey(pw, b64ToU8(vault.salt), vault.iter || VAULT_ITER);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToU8(vault.iv) }, key, b64ToU8(vault.data));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function vaultSeal(obj, pw) {
+    const salt = crypto.getRandomValues(new Uint8Array(16)); const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await vaultKey(pw, salt, VAULT_ITER);
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj))));
+    return { v: 1, kdf: 'PBKDF2-SHA256', iter: VAULT_ITER, salt: u8ToB64(salt), iv: u8ToB64(iv), data: u8ToB64(ct) };
+  }
+  let vaultPw = null; // kept in memory only, so edits can be re-encrypted
+  const testsLocked = () => course.chapters.some((c) => c.test && c.test.locked && !(c.test.written || []).length);
+  function applyUnlocked(map) {
+    course.chapters.forEach((c) => { if (map[c.id]) { c.test = c.test || { url: '', questions: [] }; c.test.written = map[c.id]; } });
+  }
+  async function unlockTests(pw) {
+    const map = await vaultOpen(course.testVault, pw); // throws on a wrong password
+    vaultPw = pw; applyUnlocked(map);
+    // tab-session only (cleared when the tab closes), so a reload doesn't re-lock and edits can be re-encrypted
+    try { sessionStorage.setItem(TESTS_OPEN, JSON.stringify({ map, pw })); } catch (e) { /* storage unavailable */ }
+  }
+  // A copy of the course with the written tests encrypted again (for export and for saved edits).
+  async function sealedCourse() {
+    const out = clone(course); const map = {};
+    out.chapters.forEach((c) => { if (c.test && (c.test.written || []).length) { map[c.id] = c.test.written; delete c.test.written; c.test.locked = true; } });
+    if (Object.keys(map).length) {
+      let pw = vaultPw;
+      if (!pw) {
+        pw = prompt('Enter the test password to re-encrypt the tests:'); if (!pw) throw new Error('cancelled');
+        if (course.testVault) await vaultOpen(course.testVault, pw); // verify it's the right password
+        vaultPw = pw;
+      }
+      out.testVault = await vaultSeal(map, pw);
+    }
+    return out;
+  }
   const saveP = () => {
     const p = me(); if (!p) return;
     store.set(progKey(p.id), P); p.last = Date.now(); saveProfiles();
@@ -55,7 +105,10 @@
     '🤖', '👾', '🧙', '🦸', '🥷', '🧑‍💻', '👩‍🚀', '🕵️', '🧑‍🔧', '🧑‍🔬', '☁️', '⚡', '🔥', '🌈', '🚀', '🛸', '💾', '🖥️', '🔌', '🧠', '🎮', '🎯', '🏆', '💎', '🍕', '☕', '🌵', '🍀', '⭐', '🌙'];
   const fmtDate = (t) => (t ? new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
   let saveTimer;
-  const saveCourseNow = () => { clearTimeout(saveTimer); store.set(KEY_EDITS, course); hasEdits = true; updateEditBar(); };
+  const saveCourseNow = () => {
+    clearTimeout(saveTimer); hasEdits = true; updateEditBar();
+    sealedCourse().then((c) => store.set(KEY_EDITS, c)).catch(() => toast('⚠️ Edits not saved: the test password is needed', 3000));
+  };
   const saveCourse = () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveCourseNow, 300); };
   const renumber = () => course.chapters.forEach((c, i) => { c.num = i + 1; });
 
@@ -146,7 +199,7 @@
   const hasTestQs = (ch) => !!(ch.test && ch.test.questions && ch.test.questions.length);
   function countable(ch, st) {
     if (st.type === 'quiz') return !!(ch.sections[st.i].quiz || []).length;
-    if (st.type === 'test') return hasTestQs(ch) || writtenOf(ch).length > 0;
+    if (st.type === 'test') return hasTestQs(ch) || writtenOf(ch).length > 0 || !!(ch.test && ch.test.locked);
     return true;
   }
   function stepDone(ch, st) {
@@ -155,7 +208,7 @@
       case 'quiz': return (P.quiz[`${ch.id}|${st.i}`] || 0) >= 60;
       case 'act': return !!P.act[`${ch.id}|act|${st.i}`];
       case 'lab': return !!P.lab[`${ch.id}|${st.i}`];
-      default: return (!hasTestQs(ch) || (P.test[ch.id] || 0) >= 70) && (!writtenOf(ch).length || !!wtCount(ch).submitted);
+      default: return (!hasTestQs(ch) || (P.test[ch.id] || 0) >= 70) && (!(writtenOf(ch).length || (ch.test && ch.test.locked)) || !!wtCount(ch).submitted);
     }
   }
   function realSteps(ch) { const m = editMode; editMode = false; const s = stepsOf(ch); editMode = m; return s; }
@@ -519,6 +572,7 @@
   function wtCount(ch, prog) {
     const W = (prog || P).written[ch.id] || { answers: {} }; let total = 0; let done = 0;
     writtenOf(ch).forEach((it, i) => { for (let k = 0; k < slotsOf(it); k++) { total++; if ((W.answers[`${i}|${k}`] || '').trim()) done++; } });
+    if (!total) done = Object.values(W.answers).filter((v) => (v || '').trim()).length;
     return { total, done, submitted: W.submitted || null };
   }
   function writtenRun(ch) {
@@ -575,7 +629,15 @@
       <div class="edit-qs">${items || '<div class="empty">No written questions yet.</div>'}</div>
       <button class="btn" style="--c:#59C059" data-act="wqAdd">+ Add written question</button>`;
   }
+  function lockScreen(ch) {
+    return `<div class="placeholder lockbox"><div class="trophy">🔒</div><h2>The ${esc(ch.title)} test is locked</h2>
+      <p>Ask your trainer for the password to start the test.${editMode ? '<br>Trainers: unlock to view and edit the test questions.' : ''}</p>
+      <form class="lock-form" id="unlockForm" autocomplete="off"><input type="password" id="testPw" class="search" placeholder="Test password" aria-label="Test password" autocomplete="off">
+      <button class="btn" style="--c:#59C059" type="submit">🔓 Unlock</button></form><p class="err" id="pwErr"></p>
+      ${wtCount(ch).done ? `<p class="muted small">Your saved answers (${wtCount(ch).done}) will be right there when you unlock.</p>` : ''}</div>`;
+  }
   function testStep(ch) {
+    if (ch.test && ch.test.locked && !writtenOf(ch).length) return lockScreen(ch);
     if (editMode) {
       if (!ch.test) return '<div class="empty">This chapter has no test. Use “+ Chapter test” above to add one.</div>';
       return `<div class="edit-panel"><label>Link to an outside test (optional, e.g. an online form)<input data-bind="test.url" value="${esc(ch.test.url || '')}" placeholder="https://…"></label></div>`
@@ -1211,9 +1273,9 @@
       const labs = ch.labs || []; const labsDone = labs.filter((_, li2) => P.lab[`${ch.id}|${li2}`]).length;
       const games = ch.activities || []; const gamesDone = games.filter((_, ai) => P.act[`${ch.id}|act|${ai}`]).length;
       tAll += terms; tDone += learned; qAll += qs.length; qDone += qPassed; lAll += labs.length; lDone += labsDone; gAll += games.length; gDone += gamesDone;
-      const wc = writtenOf(ch).length ? wtCount(ch) : null;
+      const wc = writtenOf(ch).length || (ch.test && ch.test.locked) ? wtCount(ch) : null;
       const mcq = !hasTestQs(ch) ? '' : P.test[ch.id] != null ? `${P.test[ch.id] >= 70 ? '✅' : '❌'} ${P.test[ch.id]}%` : '<span class="muted">MCQ not taken</span>';
-      const wtxt = !wc ? '' : wc.submitted ? `📝 submitted ${fmtDate(wc.submitted)}` : wc.done ? `✍️ ${wc.done}/${wc.total} answered` : '<span class="muted">not started</span>';
+      const wtxt = !wc ? '' : wc.submitted ? `📝 submitted ${fmtDate(wc.submitted)}` : wc.done ? `✍️ ${wc.done}${wc.total ? '/' + wc.total : ''} answered` : '<span class="muted">not started</span>';
       const test = !ch.test ? '—' : (!wc && !hasTestQs(ch)) ? '<span class="muted">pending</span>' : [wtxt, mcq].filter(Boolean).join(' · ');
       const pct = chapterPct(ch);
       return `<tr style="--c:${esc(ch.color)}">
@@ -1480,6 +1542,15 @@
       default: if (editMode) editAction(act, el);
     }
   });
+  app.addEventListener('submit', (e) => {
+    if (e.target.id !== 'unlockForm') return;
+    e.preventDefault();
+    const pw = $('#testPw').value; const err = $('#pwErr'); const btn = e.target.querySelector('button');
+    if (!pw) return;
+    btn.disabled = true; btn.textContent = '⏳ Checking…'; err.textContent = '';
+    unlockTests(pw).then(() => { toast('🔓 Tests unlocked. Good luck!', 2200); confetti(60); rerender(); })
+      .catch(() => { btn.disabled = false; btn.textContent = '🔓 Unlock'; err.textContent = '❌ Wrong password. Try again.'; beep(false); $('#testPw').select(); });
+  });
   app.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     const t = e.target; const k = t.dataset.k;
@@ -1651,8 +1722,10 @@
   $('#exitEdit').addEventListener('click', toggleEdit);
   $('#soundBtn').addEventListener('click', () => { P.sound = !P.sound; saveP(); renderTopbar(); beep(true); });
   $('#exportBtn').addEventListener('click', () => {
-    download('content.js', SCHEMA_DOC + 'window.COURSE = ' + JSON.stringify(course, null, 2) + ';\n');
-    toast('⬇ content.js downloaded. Replace js/content.js in the repo to publish.', 3500);
+    sealedCourse().then((c) => {
+      download('content.js', SCHEMA_DOC + 'window.COURSE = ' + JSON.stringify(c, null, 2) + ';\n');
+      toast('⬇ content.js downloaded (tests encrypted). Replace js/content.js in the repo to publish.', 3500);
+    }).catch((err) => { if (err.message !== 'cancelled') alert('Export failed: wrong test password?'); });
   });
   $('#importBtn').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', (e) => {
@@ -1700,5 +1773,6 @@
     P.xp = 0; saveP(); ui.runs = {}; ui.act = {}; renderTopbar(); rerender(); toast('Progress reset. Fresh start! 🌱');
   });
 
+  try { const open = JSON.parse(sessionStorage.getItem(TESTS_OPEN) || 'null'); if (open && open.map) { applyUnlocked(open.map); vaultPw = open.pw || null; } } catch (e) { /* storage unavailable */ }
   renumber(); renderTopbar(); updateEditBar(); route();
 })();
