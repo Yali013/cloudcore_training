@@ -1238,39 +1238,39 @@ window.COURSE = {
           "desc": "Find 4 groups of 4. Select four tiles and hit Submit. 4 mistakes allowed! Tip: start with the group you're surest about.",
           "groups": [
             {
-              "name": "Network devices",
+              "name": "Layer 2 – Data Link",
               "items": [
-                "ROUTER",
+                "MAC",
                 "SWITCH",
-                "HUB",
-                "FIREWALL"
+                "VLAN",
+                "TRUNK"
               ]
             },
             {
-              "name": "Well-known port numbers",
+              "name": "Layer 3 – Network",
               "items": [
-                "22",
-                "53",
-                "80",
-                "443"
+                "IP",
+                "ROUTER",
+                "ICMP",
+                "SUBNET"
               ]
             },
             {
-              "name": "Addressing",
+              "name": "Runs over TCP",
               "items": [
-                "IP ADDRESS",
-                "MAC ADDRESS",
-                "SUBNET MASK",
-                "DEFAULT GATEWAY"
+                "SSH",
+                "HTTPS",
+                "RDP",
+                "TELNET"
               ]
             },
             {
-              "name": "Core network services",
+              "name": "Usually runs over UDP",
               "items": [
                 "DNS",
                 "DHCP",
                 "NTP",
-                "NAT"
+                "TFTP"
               ]
             }
           ]
