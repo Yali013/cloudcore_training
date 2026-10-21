@@ -14,7 +14,8 @@
  *              a = index of the correct option (0-based), e = explanation
  *   lab      = { title, he?, kind: "internal" | "external" | "interactive" | "checklist",
  *                url?, desc, steps?: [..], activities?: [..] }
- *   test     = { url, questions: [ same as quiz ] }  -> empty = placeholder
+ *   test     = { url, questions: [ same as quiz ],
+ *                written: [{ q, parts?: [..], pre?, bonus?, section? }] }  -> open questions the trainee answers in writing
  *   activity = { type: "sort" | "pick" | "terminal" | "raid" | "order" | "match" | "memory"
  *                       | "truefalse" | "fill" | "subnet" | "chmod" | "blitz"
  *                       | "connections" | "wordguess" | "pinpoint", ... }
@@ -1434,7 +1435,93 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Explain the 7-layer OSI model and the role of each layer."
+          },
+          {
+            "q": "What is a switch? What's the difference between a switch and a repeater? And between a switch and a hub?"
+          },
+          {
+            "q": "How can a computer find another computer's MAC address using its IP? How can it find another computer's IP using its MAC?"
+          },
+          {
+            "q": "What is a router? What is its role?"
+          },
+          {
+            "q": "What is TCP/IP? Explain the differences between TCP and UDP."
+          },
+          {
+            "q": "Give an example of 2 routing protocols and compare them."
+          },
+          {
+            "q": "What is a DHCP server? What is the DHCP protocol? Can a DHCP request pass through a router?"
+          },
+          {
+            "q": "Explain Layer 4. What does Layer 4 add on top of Layer 3?"
+          },
+          {
+            "q": "What is a subnet mask and what is it used for?",
+            "parts": [
+              "What is the network ID and what is it used for?",
+              "If my IP address is 180.111.44.22 and the subnet mask is 255.255.255.0, which CLASS am I in?"
+            ]
+          },
+          {
+            "q": "What is a port? Why does it exist?",
+            "parts": [
+              "Explain the term \"socket\"."
+            ]
+          },
+          {
+            "q": "What is the ICMP protocol?"
+          },
+          {
+            "q": "Briefly explain the following protocols:",
+            "parts": [
+              "Telnet and FTP. What is their weakness?",
+              "SSH",
+              "HTTP / HTTPS"
+            ]
+          },
+          {
+            "q": "What is a VLAN? How do VLANs work? Where are they defined? Why do we use VLANs?"
+          },
+          {
+            "q": "Describe the encapsulation process as data moves between the layers, in order."
+          },
+          {
+            "q": "What is a HOP? Which protocol lets you see the hops?"
+          },
+          {
+            "q": "What is NAT? Why is it needed?"
+          },
+          {
+            "q": "My computer has the following routing table. Which route will be chosen to reach 192.168.1.15, and why?",
+            "pre": "IPv4 source       192.168.40.2\nIPv4 destination  192.168.1.15\n\nActive routes:\nDestination     Subnet mask      Interface\n192.168.40.0    255.255.255.0    192.168.40.215\n192.168.0.0     255.255.0.0      192.168.40.201\n192.0.0.0       255.0.0.0        192.168.250.253"
+          },
+          {
+            "q": "Explain the APIPA protocol and list its address range."
+          },
+          {
+            "q": "What is special about the following IP addresses?",
+            "parts": [
+              "127.0.0.1",
+              "0.0.0.0"
+            ]
+          },
+          {
+            "q": "Explain everything you know about firewalls.",
+            "parts": [
+              "Which team do you contact when you want to open firewall rules?"
+            ]
+          },
+          {
+            "q": "What is a VPN?",
+            "bonus": true
+          }
+        ]
       }
     },
     {
@@ -2403,7 +2490,77 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Briefly explain the architecture of the Unix filesystem."
+          },
+          {
+            "q": "What is RPM, what is it used for, and how is it related to yum?"
+          },
+          {
+            "q": "Explain the types of permissions, how they are represented, and how you can see a file's permissions."
+          },
+          {
+            "q": "Briefly explain each stage of the BOOT process (BIOS, MBR, GRUB, Kernel, Init)."
+          },
+          {
+            "q": "What is an i-node? What does each i-node represent?"
+          },
+          {
+            "q": "What's the difference between a hardlink and a softlink?"
+          },
+          {
+            "q": "Sticky bit: what is it?"
+          },
+          {
+            "q": "Explain what vi is, what its two modes are, and give an example of one of its commands."
+          },
+          {
+            "q": "Explain sudo and su."
+          },
+          {
+            "q": "What is LVM and what is it used for? Draw its architecture."
+          },
+          {
+            "q": "Briefly explain what each command does:",
+            "parts": [
+              "df",
+              "chmod 750 file",
+              "mount",
+              "ps",
+              "ls",
+              "cat",
+              "cd",
+              "top",
+              "mkdir",
+              "netstat",
+              "nslookup",
+              "| (pipeline)",
+              "grep"
+            ]
+          },
+          {
+            "q": "Important directories and files in Linux. Explain each one:",
+            "parts": [
+              "/bin",
+              "/etc",
+              "/ vs /root",
+              "/etc/hosts",
+              "/etc/passwd",
+              "/var/log"
+            ]
+          },
+          {
+            "q": "Which command would you use…",
+            "parts": [
+              "…to find information about my network card?",
+              "…to get information about a specific command?",
+              "…to schedule future commands?",
+              "…to find the current path?"
+            ]
+          }
+        ]
       }
     },
     {
@@ -3169,7 +3326,72 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Briefly explain the following terms:",
+            "parts": [
+              "Domain",
+              "Forest",
+              "Site",
+              "Active Directory"
+            ]
+          },
+          {
+            "q": "Explain what DNS is and the meaning of the following terms:",
+            "parts": [
+              "A / Host / AAAA record",
+              "Alias record",
+              "Forward lookup zone",
+              "Reverse lookup zone"
+            ]
+          },
+          {
+            "q": "What is a GPO? What can you configure with a GPO? What can GPO settings be applied to? What is the GPO management tool called?"
+          },
+          {
+            "q": "Explain what DFSR is."
+          },
+          {
+            "q": "Briefly explain the following tools:",
+            "parts": [
+              "mstsc",
+              "Task Manager (taskmgr)",
+              "eventvwr",
+              "dsa.msc",
+              "regedit"
+            ]
+          },
+          {
+            "q": "Briefly explain the following commands:",
+            "parts": [
+              "netstat",
+              "ipconfig",
+              "ping",
+              "traceroute (tracert)",
+              "runas"
+            ]
+          },
+          {
+            "q": "Explain what a process is and what a service is. What's the difference between them?"
+          },
+          {
+            "q": "Explain what IIS is and what SharePoint is. What's the connection between the two?"
+          },
+          {
+            "q": "Explain what SCCM is."
+          },
+          {
+            "q": "What's the difference between a LOCAL ADMIN and a DOMAIN ADMIN?"
+          },
+          {
+            "q": "Explain what a DC is and what it's used for."
+          },
+          {
+            "q": "Explain what Exchange is. What is the client-side application called, and which protocol does it use to access Exchange? What is the role of the DAG?",
+            "bonus": true
+          }
+        ]
       }
     },
     {
@@ -4681,7 +4903,104 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Explain what central storage is, and what the old storage model was. List the advantages and disadvantages of each model."
+          },
+          {
+            "q": "NAS vs. SAN vs. Object Storage:",
+            "parts": [
+              "Briefly explain each storage model.",
+              "Give uses for NAS, SAN and Object Storage.",
+              "When would you choose NAS? When SAN? When Object Storage?"
+            ]
+          },
+          {
+            "q": "Storage protocols: briefly explain each protocol.",
+            "parts": [
+              "FC",
+              "FCoE",
+              "CIFS",
+              "NFS",
+              "iSCSI",
+              "S3"
+            ]
+          },
+          {
+            "q": "Explain the following terms:",
+            "parts": [
+              "SAN switches",
+              "HBA",
+              "Snapshot: explain Copy on Write (COW) and Redirect on Write (ROW) separately",
+              "Clones",
+              "Storage Replication",
+              "Boot From SAN"
+            ]
+          },
+          {
+            "q": "RAID arrays: explain all the levels."
+          },
+          {
+            "q": "Briefly explain what a cache is."
+          },
+          {
+            "q": "Briefly explain what a read miss and a read hit are."
+          },
+          {
+            "q": "What is IO?"
+          },
+          {
+            "q": "Disks:",
+            "parts": [
+              "Explain the structure and operating principle of a hard disk, including: Spindle, Head, Cylinder, Track, Sector",
+              "Explain the structure and operating principle of a flash disk.",
+              "Explain the following disk types, their differences, advantages and disadvantages, and what we use each one for: SATA, SAS, SSD, NVMe"
+            ]
+          },
+          {
+            "q": "Explain what unstructured data and structured data are, and give examples of each."
+          },
+          {
+            "q": "Explain the term storage tiering. What is it used for? List its advantages and disadvantages for the product."
+          },
+          {
+            "q": "Explain the deduplication mechanism.",
+            "parts": [
+              "What's the difference between inline dedup and post-process dedup? Explain how each one works.",
+              "What are the advantages of using dedup?"
+            ]
+          },
+          {
+            "q": "Explain what compression is and how the mechanism works."
+          },
+          {
+            "q": "Explain what compaction is."
+          },
+          {
+            "q": "Give two examples of data you would run dedup on, and two examples of data you would run compression on."
+          },
+          {
+            "q": "Explain what thin provisioning and thick provisioning are, the difference between them, and the advantages and disadvantages of each."
+          },
+          {
+            "q": "Briefly explain the following terms:",
+            "parts": [
+              "What is a hot backup and what is a cold backup?",
+              "What is a full backup?",
+              "What is an incremental backup? When do we run it?",
+              "What is a differential backup?"
+            ]
+          },
+          {
+            "q": "Networking. Explain the following terms:",
+            "parts": [
+              "Link aggregation: when do we use it, and which implementation methods exist?",
+              "NPIV: when do we use it?",
+              "MPIO"
+            ]
+          }
+        ]
       }
     },
     {
@@ -5803,7 +6122,155 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Explain the following terms:",
+            "parts": [
+              "What the controller is.",
+              "FAS vs. AFF vs. C Series.",
+              "The role of WAFL and how it works.",
+              "What NVRAM is. Why is there a battery for it?",
+              "The ways to connect to the storage system and what each is used for (SP, ssh, console).",
+              "What the root vol is and what it's used for.",
+              "Which files are in the system's etc?",
+              "What the RC file is used for."
+            ]
+          },
+          {
+            "q": "What is a LIF? Explain the differences between LACP, multi and single."
+          },
+          {
+            "q": "Which RAID types can be used in NetApp? What's the difference between them?",
+            "parts": [
+              "How each RAID type is used, and the advantages and disadvantages of each.",
+              "What raid size is.",
+              "Which RAID type is used most?"
+            ]
+          },
+          {
+            "q": "Explain the following terms:",
+            "parts": [
+              "Aggregate",
+              "Volume",
+              "Qtree",
+              "LUN"
+            ]
+          },
+          {
+            "q": "Explain the process of building an aggregate (starting from assigning the disks to the controller)."
+          },
+          {
+            "q": "What is an initiator group (igroup)?"
+          },
+          {
+            "q": "Why do we define a LUN according to a specific operating system?"
+          },
+          {
+            "q": "Explain the process of mapping a LUN to a server (including the SAN switch settings)."
+          },
+          {
+            "q": "What are qtrees used for? What's the difference between a qtree and a regular folder?"
+          },
+          {
+            "q": "What is a snapshot? At which level are snapshots kept?"
+          },
+          {
+            "q": "What's the difference between Copy on Write and Redirect on Write?"
+          },
+          {
+            "q": "What is a quota?"
+          },
+          {
+            "q": "What's the difference between CIFS shares and exports?"
+          },
+          {
+            "q": "In which file in the etc directory are the exports and shares saved?"
+          },
+          {
+            "q": "What's the difference in how writes are acknowledged (memory) between a LUN and an export / CIFS share?"
+          },
+          {
+            "q": "Explain the terms: HA pair, Giveback, Takeover."
+          },
+          {
+            "q": "Explain what a disk shelf is, draw how it's cabled to the storage controllers, and explain what a module is."
+          },
+          {
+            "q": "Explain what cluster interconnect and intercluster connections are."
+          },
+          {
+            "q": "List the main differences between CDOT and 7-mode (at least three)."
+          },
+          {
+            "q": "What is SnapVault, and what is SnapMirror? What's the difference? (When would you use each one?)"
+          },
+          {
+            "q": "Explain the SVM DR process."
+          },
+          {
+            "section": "CLI practice: write down the commands you used for each exercise.",
+            "q": "What is the machine's serial number?"
+          },
+          {
+            "q": "What is the Data ONTAP version?"
+          },
+          {
+            "q": "How many disk shelves does the controller have, and of what type?"
+          },
+          {
+            "q": "How many spare disks are in the system, and of what type?"
+          },
+          {
+            "q": "How do you see the disks that don't belong to the system?"
+          },
+          {
+            "q": "How many RAID groups are in the system? What is the raid_size of each group?"
+          },
+          {
+            "q": "Show the licenses that exist in the system."
+          },
+          {
+            "q": "Show the domain and network details:",
+            "parts": [
+              "Domain name",
+              "DNS",
+              "IP",
+              "Subnet",
+              "Gateway"
+            ]
+          },
+          {
+            "q": "What is the command for managing users in the system?"
+          },
+          {
+            "q": "Create a LUN and connect it to a server (including creating the igroup)."
+          },
+          {
+            "q": "How do you check which LUN ID is mapped to the igroup?"
+          },
+          {
+            "q": "How do you see which LUNs sit on a specific vol?"
+          },
+          {
+            "q": "Create an export and set snapshots on it twice a day, weekly and monthly."
+          },
+          {
+            "q": "Delete the LUN, and the vols you created for the export and the CIFS shares."
+          },
+          {
+            "q": "We mapped a LUN to a certain igroup, but the server still doesn't see the LUN. What could the problem be?"
+          },
+          {
+            "q": "How do you see a list of the vols sitting on a specific aggr?"
+          },
+          {
+            "q": "Create an ifgrp on two ports with LACP, and create a VLAN on it."
+          },
+          {
+            "q": "How do you see the WWNs connected to NetApp that don't have an igroup?"
+          }
+        ]
       }
     },
     {
@@ -6302,7 +6769,52 @@ window.COURSE = {
       "labs": [],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "What is a WWNN? What is a WWPN? What's the difference?"
+          },
+          {
+            "q": "What is a GBIC? Which types of GBIC exist? Can you insert a 10g GBIC into a port on a 1g switch?"
+          },
+          {
+            "q": "What is an HBA? Can a server with 2 HBAs be connected to the same switch? What is unique about each HBA?"
+          },
+          {
+            "q": "What is NPIV? In which case would you use it? Must you use NPIV?"
+          },
+          {
+            "q": "What is an ISL? Why do you need it if you can use NPIV?"
+          },
+          {
+            "q": "What is ALUA? Where do you need to enable it? Which protocol does it use?"
+          },
+          {
+            "q": "Why do we use aliases? What do you put in an alias?"
+          },
+          {
+            "q": "What is a zone? What's the difference between hard zoning and soft zoning? Which one do we use?"
+          },
+          {
+            "q": "Can you put only an alias into a zone? If not, what else?"
+          },
+          {
+            "q": "What is a vSAN?",
+            "parts": [
+              "What is it used for?",
+              "How and where is it defined?"
+            ]
+          },
+          {
+            "q": "What is a Supervisor? Can the switch work without a Supervisor?"
+          },
+          {
+            "q": "How many members are in each zone? What's the maximum number allowed in a zone?"
+          },
+          {
+            "q": "What is the naming standard for zones and aliases?"
+          }
+        ]
       }
     },
     {
@@ -6624,7 +7136,48 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "What is an object?"
+          },
+          {
+            "q": "What information is stored in the metadata?"
+          },
+          {
+            "q": "What kind of data would we want to store in object storage?"
+          },
+          {
+            "q": "Compare object storage, SAN and NAS (volumes, data types, protocols…)."
+          },
+          {
+            "q": "What is the hierarchical structure of the storage presented to a user of the S3 protocol?"
+          },
+          {
+            "q": "Describe the process that happens in StorageGRID when a user wants to retrieve an object."
+          },
+          {
+            "q": "Explain the S3 and Swift protocols."
+          },
+          {
+            "q": "What is erasure coding?"
+          },
+          {
+            "q": "What is an ILM policy and what does it contain?"
+          },
+          {
+            "q": "Explain the uses of the Cassandra DB in StorageGRID."
+          },
+          {
+            "q": "What is an Admin Node? Which services run on it?"
+          },
+          {
+            "q": "What is a Storage Node? Which services run on it?"
+          },
+          {
+            "q": "What is a Gateway Node? Which services run on it?"
+          }
+        ]
       }
     },
     {
@@ -7712,7 +8265,65 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Explain the differences between a vSwitch and a dvSwitch. What is an uplink?"
+          },
+          {
+            "q": "How is it recommended to configure the port on the physical switch that the host connects to (Access / Trunk), and why?"
+          },
+          {
+            "q": "Explain the differences between a VMkernel port and a virtual machine port."
+          },
+          {
+            "q": "What is a port group? What do the ports in it share? Which types of port groups exist?"
+          },
+          {
+            "q": "Can a virtual network card be connected to more than one port group? Explain."
+          },
+          {
+            "q": "Fill in the table: for each case, does the traffic pass through the physical switch or not?",
+            "pre": "Case                              | Same segment | Different segment\n----------------------------------+--------------+------------------\nVM to VM on the same host         |              |\nVM to VM on a different host      |              |"
+          },
+          {
+            "q": "Scenario: two blade systems, each with one blade (no network settings) and one VM on each blade; a Nexus 5k switch with basic settings; and a Checkpoint router with basic settings. Explain the whole process you must carry out so that machine A can communicate with machine B. The machines' IP addresses are 190.12.34.56 and 190.12.34.65.",
+            "parts": [
+              "Step 1",
+              "Step 2 (hint: uplinks from each NX5K to the router)",
+              "Step 3",
+              "Step 4",
+              "Step 5",
+              "Step 6"
+            ]
+          },
+          {
+            "q": "What is load balancing? Why is it needed? Which load-balancing types do you know? (at least 3)"
+          },
+          {
+            "q": "Explain each of the following terms:",
+            "parts": [
+              "Promiscuous Mode",
+              "Forged Transmits",
+              "MAC Changes",
+              "Traffic Shaping",
+              "Network Failover Detection",
+              "Notify Switches",
+              "Failback",
+              "Failover Order (Active / Standby / Unused)"
+            ]
+          },
+          {
+            "q": "For each scenario, explain whether the communication of the VMs, the ESXi hosts and the vCenter is affected (assume the vCenter is physical):",
+            "parts": [
+              "Someone unplugs a network cable from an ESX.",
+              "Someone unplugs the vCenter's network cable.",
+              "Someone turns off the switch.",
+              "Someone turns off the vCenter.",
+              "Someone turns off the ESX."
+            ]
+          }
+        ]
       }
     },
     {
@@ -8195,7 +8806,46 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Explain the virtual disk types (Thin / Thick Lazy Zeroed / Thick Eager Zeroed)."
+          },
+          {
+            "q": "Explain the disk modes Independent Persistent / Independent Non-Persistent."
+          },
+          {
+            "q": "Explain the SCSI Bus Sharing types: Physical / Virtual / None."
+          },
+          {
+            "q": "Which RDM types can be used in a virtual environment? What are the implications of using RDM?"
+          },
+          {
+            "q": "Explain the different Virtual SCSI adapter types."
+          },
+          {
+            "q": "According to the CloudCore team standard, we want to share disks between 2 Oracle RAC servers. List all the settings required to do this. Why don't we use SCSI Bus Sharing?"
+          },
+          {
+            "q": "Complete the table of the files that make up a virtual machine (estimated size, binary or text). Also explain in detail the role of each file in the table.",
+            "pre": "File name          | Estimated size | Binary / Text\n-------------------+----------------+--------------\nVMX                |                |\nVMDK (Descriptor)  |                |\nVMDK (Flat)        |                |\nVMDK (Delta)       |                |\nVMSN               |                |\nVMSD               |                |\nVMSS               |                |\nNVRAM              |                |"
+          },
+          {
+            "q": "Explain the VSWP file in detail. What will its size be? How can you move it? What effect does a memory reservation have on it?"
+          },
+          {
+            "q": "Explain the multi-pathing methods. Which one would we use, and why? What happens if a path fails?"
+          },
+          {
+            "q": "List the steps you must carry out to present an NFS datastore to an ESXi host in your environment."
+          },
+          {
+            "q": "What is the connection between a LUN and a datastore?"
+          },
+          {
+            "q": "What is the difference between a VMFS datastore and an NFS datastore? Elaborate!"
+          }
+        ]
       }
     },
     {
@@ -8838,7 +9488,111 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "Which of the following actions can you perform while the virtual machine is powered on?",
+            "parts": [
+              "Add a hard disk",
+              "Remove a floppy",
+              "Remove vCPUs",
+              "Add a network adapter",
+              "Remove RAM",
+              "Add parameters to the vmx"
+            ]
+          },
+          {
+            "q": "Explain what VMware Tools are and what they provide. Detail what can and can't be done when they are not installed."
+          },
+          {
+            "q": "Where is the VMware Tools installation located? Give 3 ways to check that VMware Tools is installed on a VM running Windows."
+          },
+          {
+            "q": "Which command do you run to restart the Management Agents on ESXi? How can you do it in the GUI?"
+          },
+          {
+            "q": "What are the 4 steps ESXi takes to deal with memory contention?"
+          },
+          {
+            "q": "Explain the Shares mechanism. How does it work? When do we use it?"
+          },
+          {
+            "q": "What are Limit and Reservation? What is a Resource Pool? By what criteria would we split into different Resource Pools?"
+          },
+          {
+            "q": "Explain HA and Admission Control in detail. What's the difference between HA and FT?"
+          },
+          {
+            "q": "Explain DRS in detail. Which modes does it have? What are DRS Rules?"
+          },
+          {
+            "q": "What's the difference between Cold Migration and Hot Migration?"
+          },
+          {
+            "q": "What is Enhanced vMotion?"
+          },
+          {
+            "q": "What is Enhanced vMotion Compatibility?"
+          },
+          {
+            "q": "In a project with a virtual vCenter and 4 ESXi hosts, someone pressed the main power switch and shut down the whole hall. After the power came back, you can't connect to the vCenter. Detail the full process you need to carry out until you can connect to the vCenter."
+          },
+          {
+            "q": "Following the previous question: how do you manage ESXi servers without vCenter? What can't you do while the vCenter is down?"
+          },
+          {
+            "q": "Using the vmx file of a virtual machine (your trainer will give it to you), fill in the following details (if there are 2, refer to only 1):",
+            "parts": [
+              "VM name",
+              "VM version",
+              "RAM size",
+              "Name of the port group it's connected to",
+              "MAC address of the network card",
+              "Operating system type (e.g. rhel5-64)",
+              "Does the machine have shared disks? Explain."
+            ]
+          },
+          {
+            "q": "What's the difference between a VM and a Template? Where does a Customization Specification come in?"
+          },
+          {
+            "q": "What is the role of the Master in FDM? Why is it needed? How is it chosen?"
+          },
+          {
+            "q": "What is Datastore Heartbeating? What's different about the datastores chosen for heartbeats?"
+          },
+          {
+            "q": "What is Isolation Response? What do we do in such a situation?"
+          },
+          {
+            "q": "Here's the name of a datastore in our environment: na_hp_2_lnx_2_ds3. Explain what each part of the name represents. Also, why would we want to separate datastores? (not related to space limits)"
+          },
+          {
+            "q": "Explain fully how a VMware snapshot works. What's the problem with expanding the disk of a VM that has a snapshot?"
+          },
+          {
+            "q": "In which ways can you power off a virtual machine? List at least 3."
+          },
+          {
+            "q": "What's the order of operations when we want to move a virtual machine between two completely independent environments (separate vCenter, separate storage, separate network)?"
+          },
+          {
+            "q": "True or false? Explain each answer.",
+            "parts": [
+              "We moved a virtual machine between two independent environments and didn't change any settings. The machine's vswp file will always be saved in the datastore where the VMX is.",
+              "On an ESXi host with 128 GB RAM, you can run 20 VMs with 8 GB RAM each.",
+              "On an ESXi host that sees a 128 GB datastore, you can run 20 VMs, each with an 8 GB eager-zeroed disk (on that datastore).",
+              "You can manage clusters from several different physical sites.",
+              "If the VMware Tools service is unavailable or stopped, you can't connect to the ESXi host.",
+              "You can do Enhanced vMotion through the vSphere Client within the same cluster, for a powered-on machine.",
+              "You can do Enhanced vMotion through the Web Client between clusters, for a powered-on machine.",
+              "An ESXi host can be connected directly to a Datacenter; it doesn't have to be part of a cluster."
+            ]
+          },
+          {
+            "q": "A system's support center called you and claimed their VM is starved of RAM. You connected to the server and saw that it really is using the maximum it sees (6 GB). You checked the server's settings and saw it's allocated 8 GB. How is that possible?"
+          }
+        ]
       }
     },
     {
@@ -9380,7 +10134,55 @@ window.COURSE = {
       ],
       "test": {
         "url": "",
-        "questions": []
+        "questions": [],
+        "written": [
+          {
+            "q": "What is Commvault?"
+          },
+          {
+            "q": "What is a backup? What is an Application-Aware Backup? What is a restore?"
+          },
+          {
+            "q": "Explain the following terms:",
+            "parts": [
+              "CommServe",
+              "Media Agent",
+              "Disk Library",
+              "Storage Policy",
+              "Client",
+              "Agent",
+              "IntelliSnap",
+              "Schedule Policy"
+            ]
+          },
+          {
+            "q": "Briefly describe how a backup process is carried out."
+          },
+          {
+            "q": "What is the Virtual Server Agent?"
+          },
+          {
+            "q": "What is a Crash Consistent backup?"
+          },
+          {
+            "q": "How is an IntelliSnap restore carried out? How does it interface with the storage arrays?"
+          },
+          {
+            "q": "Why does an Availability Group client type exist? Which DB is it used for?"
+          },
+          {
+            "q": "Which restore type do we use when we want to restore something for a short time?"
+          },
+          {
+            "q": "What's the difference between a Plan and a Storage Policy plus Schedule Policy?"
+          },
+          {
+            "q": "What's the difference between Command Center and the CommCell Console?"
+          },
+          {
+            "q": "Explain the process that happens when you run a restore with Live Recovery."
+          }
+        ]
       }
     },
     {

@@ -218,6 +218,22 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; backgrou
 .q-dots i.cur { background: var(--c); }
 .q-dots i.ok { background: var(--green); }
 .q-dots i.bad { background: var(--red); }
+/* written tests */
+.wt { max-width: 860px; margin: 0 auto; }
+.wt-intro { background: var(--soft); border: 3px solid var(--line); border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; }
+.wt-intro h2 { margin-bottom: 6px; }
+.wt-section { margin: 26px 0 10px; padding: 8px 14px; border-radius: 12px; background: color-mix(in srgb, var(--c) 14%, var(--card)); color: color-mix(in srgb, var(--c) 75%, var(--tint-ink)); }
+.wt-q { background: var(--card); border: 2px solid var(--line); border-left: 6px solid var(--c); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
+.wt-head { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.wt-head h4 { flex: 1; min-width: 200px; margin: 3px 0 8px; font-family: var(--head); font-size: 1.05rem; font-weight: 600; }
+.wt-num { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--c); color: #fff; font-family: var(--head); font-weight: 700; }
+.wt-pre { background: #1C1F33; color: #E4E8FF; border-radius: 12px; padding: 12px 14px; overflow-x: auto; font-size: .85rem; line-height: 1.45; direction: ltr; margin: 4px 0 10px; }
+.wt-ans { display: block; margin-top: 8px; }
+.wt-part { display: block; font-size: .92rem; margin-bottom: 4px; color: var(--ink2); }
+.wt-ans textarea { width: 100%; font: inherit; font-size: .95rem; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--soft); color: var(--ink); resize: vertical; }
+.wt-ans textarea:focus { outline: none; border-color: var(--c); background: var(--card); }
+.wt-foot { margin-top: 18px; padding-top: 6px; border-top: 3px dashed var(--line); }
+.mono { font-family: ui-monospace, Consolas, monospace !important; font-size: .85rem !important; }
 .bonus-tag { display: inline-block; margin: 0 0 6px; padding: 4px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600; background: var(--warn-bg); border: 2px solid var(--warn-line); color: var(--warn-ink); }
 .edit-sep { border: 0; border-top: 3px dashed var(--line); margin: 26px 0 18px; }
 .q-card {border: 3px solid var(--line); border-radius: 22px; padding: 22px; background: var(--soft); transition: border-color .2s; }

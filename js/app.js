@@ -24,7 +24,7 @@
   const progKey = (id) => 'cca_progress_' + id;
   let course = store.get(KEY_EDITS) || clone(window.COURSE);
   let hasEdits = !!store.get(KEY_EDITS);
-  const emptyProgress = () => ({ xp: 0, flip: {}, qa: {}, quiz: {}, quizFailed: {}, retryUsed: {}, act: {}, lab: {}, labxp: {}, checks: {}, test: {}, blitz: {}, wg: {}, sound: false });
+  const emptyProgress = () => ({ xp: 0, flip: {}, qa: {}, quiz: {}, quizFailed: {}, retryUsed: {}, act: {}, lab: {}, labxp: {}, checks: {}, test: {}, blitz: {}, wg: {}, written: {}, sound: false });
   // Trainee profiles: no auth, just a name per person, each with its own progress in this browser.
   const profiles = Object.assign({ current: null, list: [] }, store.get(KEY_PROFILES) || {});
   const saveProfiles = () => store.set(KEY_PROFILES, profiles);
@@ -146,7 +146,7 @@
   const hasTestQs = (ch) => !!(ch.test && ch.test.questions && ch.test.questions.length);
   function countable(ch, st) {
     if (st.type === 'quiz') return !!(ch.sections[st.i].quiz || []).length;
-    if (st.type === 'test') return hasTestQs(ch);
+    if (st.type === 'test') return hasTestQs(ch) || writtenOf(ch).length > 0;
     return true;
   }
   function stepDone(ch, st) {
@@ -155,7 +155,7 @@
       case 'quiz': return (P.quiz[`${ch.id}|${st.i}`] || 0) >= 60;
       case 'act': return !!P.act[`${ch.id}|act|${st.i}`];
       case 'lab': return !!P.lab[`${ch.id}|${st.i}`];
-      default: return (P.test[ch.id] || 0) >= 70;
+      default: return (!hasTestQs(ch) || (P.test[ch.id] || 0) >= 70) && (!writtenOf(ch).length || !!wtCount(ch).submitted);
     }
   }
   function realSteps(ch) { const m = editMode; editMode = false; const s = stepsOf(ch); editMode = m; return s; }
@@ -512,19 +512,84 @@
   }
 
   // ----- test -----
+  // ----- chapter tests: multiple choice (auto-graded) and/or written (open answers, reviewed by a trainer) -----
+  const writtenOf = (ch) => (ch.test && ch.test.written) || [];
+  const slotsOf = (item) => (item.parts && item.parts.length ? item.parts.length : 1);
+  const wtState = (ch) => P.written[ch.id] || (P.written[ch.id] = { answers: {}, submitted: null });
+  function wtCount(ch, prog) {
+    const W = (prog || P).written[ch.id] || { answers: {} }; let total = 0; let done = 0;
+    writtenOf(ch).forEach((it, i) => { for (let k = 0; k < slotsOf(it); k++) { total++; if ((W.answers[`${i}|${k}`] || '').trim()) done++; } });
+    return { total, done, submitted: W.submitted || null };
+  }
+  function writtenRun(ch) {
+    const W = wtState(ch); const c = wtCount(ch); const cid = esc(ch.id);
+    let n = 0;
+    const items = writtenOf(ch).map((it, i) => {
+      n++;
+      const box = (k, label) => `<label class="wt-ans">${label ? `<span class="wt-part" dir="auto">${label}</span>` : ''}
+        <textarea data-wt="${cid}|${i}|${k}" rows="${label ? 2 : 4}" placeholder="Your answer…" dir="auto">${esc(W.answers[`${i}|${k}`] || '')}</textarea></label>`;
+      const body = it.parts && it.parts.length
+        ? it.parts.map((pt, k) => box(k, `<b>${String.fromCharCode(97 + k)}.</b> ${fmt(pt)}`)).join('')
+        : box(0, '');
+      return `${it.section ? `<h3 class="wt-section" dir="auto">${fmt(it.section)}</h3>` : ''}
+        <div class="wt-q"><div class="wt-head"><span class="wt-num">${n}</span><h4 dir="auto">${fmt(it.q)}</h4>${it.bonus ? '<span class="bonus-tag">⭐ Bonus</span>' : ''}</div>
+        ${it.pre ? `<pre class="wt-pre">${esc(it.pre)}</pre>` : ''}${body}</div>`;
+    }).join('');
+    return `<div class="wt">
+      <div class="wt-intro"><h2>📝 Written test: ${esc(ch.title)}</h2>
+        <p>Answer in your own words, and explain the process behind each answer, not just the definition. Your answers are <b>saved automatically</b> for your trainee profile in this browser.</p>
+        <div class="row between"><span class="pill" id="wtCount">✍️ ${c.done}/${c.total} answered</span>
+          ${c.submitted ? `<span class="done-badge">✔ Submitted ${fmtDate(c.submitted)}</span>` : ''}</div></div>
+      ${items}
+      <div class="wt-foot">
+        <p class="hint">When you're done, submit the test and send your answers to your trainer (download them, or export your progress from 📈 My progress).</p>
+        <div class="row end"><button class="btn ghost" data-act="wtDownload" data-k="${cid}">⬇ Download my answers</button>
+          <button class="btn" style="--c:#59C059" data-act="wtSubmit" data-k="${cid}">${c.submitted ? '✅ Submit again (updated answers)' : '✅ Submit for review'}</button></div>
+      </div></div>`;
+  }
+  function writtenText(ch) {
+    const W = wtState(ch); const p = me(); let n = 0;
+    const lines = [`CloudCore Academy · Written test: ${ch.title}`, `Trainee: ${p ? p.name : ''} · ${new Date().toLocaleString()}`, ''];
+    writtenOf(ch).forEach((it, i) => {
+      n++; if (it.section) lines.push(`== ${it.section} ==`, '');
+      lines.push(`${n}. ${it.q}${it.bonus ? ' (bonus)' : ''}`);
+      if (it.pre) lines.push(...it.pre.split('\n').map((l) => '     ' + l));
+      if (it.parts && it.parts.length) it.parts.forEach((pt, k) => { lines.push(`   ${String.fromCharCode(97 + k)}. ${pt}`, `      Answer: ${(W.answers[`${i}|${k}`] || '').trim() || '(no answer)'}`); });
+      else lines.push(`   Answer: ${(W.answers[`${i}|0`] || '').trim() || '(no answer)'}`);
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+  function writtenEdit(ch) {
+    const items = writtenOf(ch).map((it, i) => `
+      <div class="edit-q">
+        <div class="row between"><b>Written question ${i + 1}</b><span class="row">
+          <button class="icon-btn" data-act="wqUp" data-i="${i}" title="Move up">↑</button><button class="icon-btn danger" data-act="wqDel" data-i="${i}" title="Delete question">🗑</button></span></div>
+        <input data-bind="test.written.${i}.section" value="${esc(it.section || '')}" placeholder="Optional heading shown above this question (e.g. CLI practice)" dir="auto">
+        <textarea data-bind="test.written.${i}.q" rows="2" placeholder="Question" dir="auto">${esc(it.q)}</textarea>
+        <textarea data-bindlines="test.written.${i}.parts" rows="${Math.max(2, (it.parts || []).length)}" placeholder="Sub-questions a, b, c… (one per line, optional)" dir="auto">${esc((it.parts || []).join('\n'))}</textarea>
+        <textarea data-bind="test.written.${i}.pre" rows="2" class="mono" placeholder="Optional fixed-width block (tables, routing output…)">${esc(it.pre || '')}</textarea>
+        <label class="edit-opt"><input type="checkbox" data-bindbool="test.written.${i}.bonus" ${it.bonus ? 'checked' : ''}> Bonus question</label>
+      </div>`).join('');
+    return `<h2>✏️ Written test – edit questions</h2><p class="hint">Open questions the trainee answers in writing; a trainer reviews the answers.</p>
+      <div class="edit-qs">${items || '<div class="empty">No written questions yet.</div>'}</div>
+      <button class="btn" style="--c:#59C059" data-act="wqAdd">+ Add written question</button>`;
+  }
   function testStep(ch) {
     if (editMode) {
       if (!ch.test) return '<div class="empty">This chapter has no test. Use “+ Chapter test” above to add one.</div>';
-      return `<div class="edit-panel"><label>Link to an outside test (optional, e.g. an online form)<input data-bind="test.url" value="${esc(ch.test.url || '')}" placeholder="https://…"></label></div>` + quizEdit(ch, 'test.questions', 'Chapter test');
+      return `<div class="edit-panel"><label>Link to an outside test (optional, e.g. an online form)<input data-bind="test.url" value="${esc(ch.test.url || '')}" placeholder="https://…"></label></div>`
+        + writtenEdit(ch) + '<hr class="edit-sep">' + quizEdit(ch, 'test.questions', 'Multiple-choice test', 'Optional, auto-graded with a 70% pass mark.');
     }
-    if (hasTestQs(ch)) {
-      return `<p class="hint">Pass mark: 70%. Good luck! 🍀</p>` + quizRun(ch, `${ch.id}|test`, ch.test.questions, 'test');
-    }
+    const parts = [];
+    if (writtenOf(ch).length) parts.push(writtenRun(ch));
+    if (hasTestQs(ch)) parts.push(`<p class="hint">Multiple-choice part. Pass mark: 70%. Good luck! 🍀</p>` + quizRun(ch, `${ch.id}|test`, ch.test.questions, 'test'));
+    if (ch.test && ch.test.url) parts.push(`<div class="row center"><a class="btn big" target="_blank" rel="noopener" href="${esc(ch.test.url)}">Open the outside test ↗</a></div>`);
+    if (parts.length) return parts.join('<hr class="edit-sep">');
     return `<div class="placeholder">
         <div class="trophy">🏆</div>
         <h2>Chapter test: coming soon</h2>
         <p>Your trainer will upload the <b>${esc(ch.title)}</b> test here.<br>In the meantime, get all the mini quizzes to ⭐⭐⭐!</p>
-        ${ch.test && ch.test.url ? `<a class="btn big" target="_blank" rel="noopener" href="${esc(ch.test.url)}">Open the test ↗</a>` : ''}
       </div>`;
   }
 
@@ -1146,7 +1211,10 @@
       const labs = ch.labs || []; const labsDone = labs.filter((_, li2) => P.lab[`${ch.id}|${li2}`]).length;
       const games = ch.activities || []; const gamesDone = games.filter((_, ai) => P.act[`${ch.id}|act|${ai}`]).length;
       tAll += terms; tDone += learned; qAll += qs.length; qDone += qPassed; lAll += labs.length; lDone += labsDone; gAll += games.length; gDone += gamesDone;
-      const test = !ch.test ? '—' : !hasTestQs(ch) ? '<span class="muted">pending</span>' : P.test[ch.id] != null ? `${P.test[ch.id] >= 70 ? '✅' : '❌'} ${P.test[ch.id]}%` : '<span class="muted">not taken</span>';
+      const wc = writtenOf(ch).length ? wtCount(ch) : null;
+      const mcq = !hasTestQs(ch) ? '' : P.test[ch.id] != null ? `${P.test[ch.id] >= 70 ? '✅' : '❌'} ${P.test[ch.id]}%` : '<span class="muted">MCQ not taken</span>';
+      const wtxt = !wc ? '' : wc.submitted ? `📝 submitted ${fmtDate(wc.submitted)}` : wc.done ? `✍️ ${wc.done}/${wc.total} answered` : '<span class="muted">not started</span>';
+      const test = !ch.test ? '—' : (!wc && !hasTestQs(ch)) ? '<span class="muted">pending</span>' : [wtxt, mcq].filter(Boolean).join(' · ');
       const pct = chapterPct(ch);
       return `<tr style="--c:${esc(ch.color)}">
         <td><a href="#/c/${esc(ch.id)}/0" class="p-ch"><span>${esc(ch.icon)}</span> ${ch.num}. ${esc(ch.title)}</a></td>
@@ -1379,6 +1447,19 @@
       }
       // trainees
       case 'whoPick': selectProfile(el.dataset.id); location.hash = '#/'; rerender(); break;
+      case 'wtSubmit': {
+        const c = course.chapters.find((x) => x.id === k); const cnt = wtCount(c);
+        if (cnt.done < cnt.total && !confirm(`You answered ${cnt.done} of ${cnt.total}. Submit anyway?`)) break;
+        const W = wtState(c); const first = !W.submitted; W.submitted = Date.now(); saveP();
+        if (first) { addXP(100); confetti(150); }
+        toast('📝 Test submitted! Send your answers to your trainer.', 3000); rerender(); break;
+      }
+      case 'wtDownload': {
+        const c = course.chapters.find((x) => x.id === k); const p = me();
+        const url = URL.createObjectURL(new Blob([writtenText(c)], { type: 'text/plain;charset=utf-8' }));
+        const a = document.createElement('a'); a.href = url; a.download = `test-${c.id}-${(p ? p.name : 'trainee').replace(/[^\w\u0590-\u05FF-]+/g, '_')}.txt`;
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); break;
+      }
       case 'arcType': ui.arcade.type = el.dataset.v; rerender(); break;
       case 'arcStatus': ui.arcade.status = el.dataset.v; rerender(); break;
       case 'whoAvatar': openAvatarPicker(el.dataset.id); break;
@@ -1408,9 +1489,16 @@
     else if (t.classList.contains('ch-in')) { e.preventDefault(); chCheck(k); }
     else if (t.classList.contains('sn-in')) { e.preventDefault(); snCheck(k); }
   });
-  // game inputs keep their values across re-renders
+  // game inputs keep their values across re-renders; written-test answers autosave
+  let wtTimer;
   app.addEventListener('input', (e) => {
     const t = e.target;
+    if (t.dataset.wt) {
+      const [chId, i, k] = t.dataset.wt.split('|'); const c = course.chapters.find((x) => x.id === chId); if (!c || !me()) return;
+      wtState(c).answers[`${i}|${k}`] = t.value; clearTimeout(wtTimer); wtTimer = setTimeout(saveP, 400);
+      const cnt = wtCount(c); const el = $('#wtCount'); if (el) el.textContent = `✍️ ${cnt.done}/${cnt.total} answered`;
+      return;
+    }
     if (t.dataset.sv && t.dataset.k && ui.act[t.dataset.k]) { ui.act[t.dataset.k].vals[t.dataset.sv] = t.value; }
   });
   document.addEventListener('keydown', (e) => {
@@ -1444,6 +1532,7 @@
   app.addEventListener('change', (e) => {
     const el = e.target; if (!editMode || !cur) return;
     if (el.dataset.bindnum != null) { setPath(cur.ch, el.dataset.bindnum, Number(el.value)); saveCourseNow(); rerender(); }
+    else if (el.dataset.bindbool != null) { setPath(cur.ch, el.dataset.bindbool, el.checked); saveCourseNow(); }
     else if (el.dataset.rerender || el.type === 'color') { saveCourseNow(); rerender(); }
   });
   function goStep(ch, pred) {
@@ -1481,6 +1570,9 @@
       case 'labAdd': ch.labs = ch.labs || []; ch.labs.push({ title: 'New lab', kind: 'internal', desc: '', steps: [] }); saveCourseNow(); return goStep(ch, (s) => s.type === 'lab' && s.i === ch.labs.length - 1);
       case 'labDel': if (!confirm(`Delete lab “${ch.labs[i].title}”?`)) return; ch.labs.splice(i, 1); saveCourseNow(); rerender(); return;
       case 'actDel': if (!confirm('Delete this mini-game?')) return; ch.activities.splice(i, 1); saveCourseNow(); rerender(); return;
+      case 'wqAdd': { if (!ch.test) ch.test = { url: '', questions: [] }; (ch.test.written || (ch.test.written = [])).push({ q: '' }); saveCourseNow(); rerender(); return; }
+      case 'wqDel': if (!confirm('Delete this written question?')) return; ch.test.written.splice(i, 1); saveCourseNow(); rerender(); return;
+      case 'wqUp': swap(ch.test.written, i, i - 1); saveCourseNow(); rerender(); return;
       case 'testToggle':
         if (ch.test) { if (hasTestQs(ch) && !confirm('Remove the chapter test and its questions?')) return; ch.test = null; }
         else ch.test = { url: '', questions: [] };
@@ -1604,7 +1696,7 @@
   $('#resetBtn').addEventListener('click', () => {
     if (!me()) return;
     if (!confirm(`Reset all XP and progress for ${me().name}? This cannot be undone.`)) return;
-    ['flip', 'qa', 'quiz', 'quizFailed', 'retryUsed', 'act', 'lab', 'labxp', 'checks', 'test', 'blitz', 'wg'].forEach((key) => { P[key] = {}; });
+    ['flip', 'qa', 'quiz', 'quizFailed', 'retryUsed', 'act', 'lab', 'labxp', 'checks', 'test', 'blitz', 'wg', 'written'].forEach((key) => { P[key] = {}; });
     P.xp = 0; saveP(); ui.runs = {}; ui.act = {}; renderTopbar(); rerender(); toast('Progress reset. Fresh start! 🌱');
   });
 

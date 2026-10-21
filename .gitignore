@@ -2,3 +2,5 @@
 _src/
 *.zip
 .claude/
+# test documents (photos) used to write the in-site tests
+tests/

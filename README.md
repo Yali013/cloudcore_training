@@ -50,11 +50,19 @@ Advanced edits (e.g. the mini-games) go through **{ } Edit chapter JSON** or **{
 
 **Or edit the file directly.** The shape is documented at the top of `js/content.js`.
 
-### Adding the chapter tests
+### Chapter tests
 
-Each chapter has `test: { url: "", questions: [] }`. Either:
-- add multiple-choice questions (in Edit mode: open the 🏆 step → "+ Add question"); the pass mark is 70%; or
-- put a link to an external form in `url` (e.g. an online form).
+The trainers' **written tests** are built in (chapters 2–8 and 10–13; Hardware has none yet), translated to English.
+- Trainees type their answers per question (with a/b/c sub-questions). Answers **autosave** per trainee.
+- Trainees click **Submit for review**, and send the answers with **Download my answers** (a .txt file) or with their exported progress file. A trainer who imports the progress file can switch to that trainee and read the answers on the test page.
+- Submitting completes the chapter's test step.
+
+Each chapter's test is `test: { url, questions: [], written: [] }`. In Edit mode, open the 🏆 step to:
+- edit or add **written questions** (optional heading, sub-questions, a fixed-width block for tables/output, bonus flag);
+- add optional **multiple-choice** questions (auto-graded, 70% pass mark);
+- or link an outside test in `url`.
+
+The original test photos stay in the local `tests/` folder, which is not uploaded to GitHub.
 
 ## Hosting (GitHub Pages, automatic)
 
