@@ -8,6 +8,11 @@
  *   • "Test answers" – one row per trainee per chapter test (their written answers)
  *
  * SHARED_KEY must match the key in js/sync-config.js on the site.
+ *
+ * Trainer dashboard: the site's 🧑‍🏫 Trainer page reads these sheets back, but only with the trainer password.
+ * Set it in Apps Script → ⚙️ Project Settings → Script properties → Add script property:
+ *   Property: TRAINER_PASSWORD   Value: (your trainer password)
+ * It lives only in this script's settings, never in the site's code.
  */
 const SHARED_KEY = 'cca-2j9B52q-sF8hZSb38Asb0D0U';
 
@@ -17,17 +22,20 @@ const T_HEAD = ['Trainee ID', 'Name', 'Avatar', 'Last update', 'Overall %', 'XP'
   'Quizzes passed', 'Mini-games', 'Labs done', 'Tests submitted', 'Progress per chapter', 'Progress JSON'];
 const A_HEAD = ['Trainee ID', 'Name', 'Chapter', 'Status', 'Answered', 'Last update', 'Questions & answers'];
 const CELL_MAX = 49000; // Google Sheets cells hold up to 50,000 characters
+const MAX_FAILS = 20;   // wrong trainer passwords allowed per 10 minutes (slows down guessing)
 
 function doGet() {
   return json({ ok: true, msg: 'CloudCore Academy sync is running.' });
 }
 
 function doPost(e) {
+  let d;
+  try { d = JSON.parse(e.postData.contents); } catch (err) { return json({ ok: false, error: 'bad request' }); }
+  if (d.key !== SHARED_KEY) return json({ ok: false, error: 'bad key' });
+  if (d.action === 'list') return trainerList(d);
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const d = JSON.parse(e.postData.contents);
-    if (d.key !== SHARED_KEY) return json({ ok: false, error: 'bad key' });
     if (!d.profile || !d.profile.id) return json({ ok: false, error: 'no profile' });
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const now = new Date();
@@ -51,6 +59,37 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Trainer dashboard: return both sheets, only with the right trainer password.
+function trainerList(d) {
+  const cache = CacheService.getScriptCache();
+  const fails = Number(cache.get('trainer_fails') || 0);
+  if (fails >= MAX_FAILS) return json({ ok: false, error: 'too many tries' });
+  const pw = PropertiesService.getScriptProperties().getProperty('TRAINER_PASSWORD');
+  if (!pw) return json({ ok: false, error: 'no trainer password' });
+  if (String(d.password || '') !== pw) {
+    cache.put('trainer_fails', String(fails + 1), 600);
+    Utilities.sleep(800);
+    return json({ ok: false, error: 'wrong password' });
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trainees = rows(ss, TRAINEES);
+  trainees.forEach((r) => { delete r['Progress JSON']; });
+  return json({ ok: true, trainees: trainees, answers: rows(ss, ANSWERS), at: new Date() });
+}
+
+// A sheet's rows as objects keyed by the header row (includes any columns trainers added).
+function rows(ss, name) {
+  const sh = ss.getSheetByName(name);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const v = sh.getDataRange().getValues();
+  const head = v.shift().map(String);
+  return v.filter((r) => r[0] !== '').map((r) => {
+    const o = {};
+    head.forEach((h, i) => { if (h) o[h] = r[i]; });
+    return o;
+  });
 }
 
 // Get or create a sheet with a bold, frozen header row.

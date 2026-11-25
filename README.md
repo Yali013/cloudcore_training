@@ -38,6 +38,16 @@ One-time setup:
 3. **Deploy → New deployment →** gear icon **→ Web app**. Set *Execute as*: **Me**, and *Who has access*: **Anyone**. Click **Deploy** and approve the permissions.
 4. Copy the **Web app URL** (it ends with `/exec`), put it in `url` in `js/sync-config.js`, then commit and push.
 
+### 🧑‍🏫 Trainer mode
+
+Trainers and trainees use the same site. Trainers unlock extra features with a **trainer password**:
+- the **🧑‍🏫 Trainer** button (top bar) opens a **dashboard of every trainee**, read live from the sheet: last active, overall %, XP, terms, quizzes, games, labs and tests. You can sort and filter it. Click a trainee to see their per-chapter progress and their **written test answers**. Any columns you add to the Trainees tab (e.g. "Grade") show up there too.
+- **✏️ Edit** mode appears only in trainer mode.
+
+The password is checked by the Apps Script, so it's never in the site's code. To set it, open Apps Script, go to **⚙️ Project Settings → Script properties → Add script property**, and add `TRAINER_PASSWORD` = your password. To change it later, edit that property. No redeploy is needed. Trainer mode lasts for the browser tab session. **🔒 Lock trainer mode** ends it. After 20 wrong passwords in 10 minutes, logins pause for 10 minutes.
+
+The sheet itself stays private to whoever you share it with.
+
 The URL and key are visible in the site's code, so anyone technical could send fake rows. That's fine for training progress, but don't put sensitive data in the sheet. If you ever change `SHARED_KEY` in `Code.gs`, change `key` in `js/sync-config.js` to match. After editing `Code.gs`, redeploy with **Deploy → Manage deployments → Edit → New version**.
 
 ## Run it locally
@@ -56,6 +66,7 @@ All content lives in **`js/content.js`**.
 
 **The easy way: in the site**
 1. Click **✏️ Edit** in the top bar.
+   (Only in trainer mode when a progress sheet is connected; see *Trainer mode*.)
 2. Edit chapter details, section titles, terms, quiz questions (pick the correct answer with the radio button), labs, and chapter tests. Add or delete anything with the + and 🗑 buttons.
 3. Edits save automatically **in your browser only**.
 4. Click **⬇ Export content.js** and replace `js/content.js` in the repo with the downloaded file. Everyone sees the changes once the file is committed.

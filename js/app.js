@@ -133,6 +133,47 @@
     syncPending = true; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 8000);
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && syncPending) syncNow(true); });
+
+  // ---------- trainer mode ----------
+  // The trainer password is checked by the Apps Script (Script property TRAINER_PASSWORD), never stored in the site.
+  // Once accepted it's kept for this tab session only, so a reload doesn't log the trainer out.
+  const TRAINER = 'cca_trainer';
+  let trainerPw = null;
+  try { trainerPw = (JSON.parse(sessionStorage.getItem(TRAINER) || 'null') || {}).pw || null; } catch (e) { /* storage unavailable */ }
+  const isTrainer = () => !!trainerPw;
+  const canEdit = () => isTrainer() || !SYNC.url; // without a sheet there's nothing to check the password against
+  const TR = { data: null, loading: false, err: '', sort: 'last', dir: -1 };
+  const TR_ERR = {
+    'wrong password': '❌ Wrong trainer password.',
+    'no trainer password': 'The sheet has no trainer password yet. In Apps Script: ⚙️ Project Settings → Script properties → add TRAINER_PASSWORD.',
+    'too many tries': '⏳ Too many wrong tries. Wait 10 minutes and try again.',
+    'no profile': 'The sheet is running an older script. Paste the new sync/Code.gs into Apps Script and redeploy (Manage deployments → Edit → New version).',
+  };
+  async function trainerFetch(pw) {
+    const r = await fetch(SYNC.url, { method: 'POST', body: JSON.stringify({ action: 'list', key: SYNC.key, password: pw }), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'failed');
+    return d;
+  }
+  const trErr = (e) => TR_ERR[e.message] || `Couldn't reach the progress sheet (${e.message}). Check your connection and try again.`;
+  const onTrainerPage = () => /^#\/trainer/.test(location.hash);
+  function trainerLoad() {
+    TR.loading = true; TR.err = ''; if (onTrainerPage()) rerender();
+    trainerFetch(trainerPw).then((d) => { TR.data = d; })
+      .catch((e) => { TR.err = trErr(e); if (e.message === 'wrong password') trainerLogout(true); })
+      .finally(() => { TR.loading = false; if (onTrainerPage()) rerender(); });
+  }
+  function trainerLogin(pw, d) {
+    trainerPw = pw; TR.data = d; TR.err = '';
+    try { sessionStorage.setItem(TRAINER, JSON.stringify({ pw })); } catch (e) { /* storage unavailable */ }
+    renderTopbar();
+  }
+  function trainerLogout(quiet) {
+    trainerPw = null; TR.data = null;
+    try { sessionStorage.removeItem(TRAINER); } catch (e) { /* storage unavailable */ }
+    if (editMode) toggleEdit();
+    renderTopbar(); if (!quiet) toast('🔒 Trainer mode locked');
+  }
   const saveP = () => {
     const p = me(); if (!p) return;
     store.set(progKey(p.id), P); p.last = Date.now(); saveProfiles(); scheduleSync();
@@ -293,6 +334,11 @@
     $('#soundBtn').title = P.sound ? 'Sound on' : 'Sound off';
     $('#editBtn').classList.toggle('on', editMode);
     $('#editBtn').textContent = editMode ? '✅ Done editing' : '✏️ Edit';
+    $('#editBtn').hidden = !canEdit() && !editMode;
+    $('#trainerBtn').hidden = !SYNC.url;
+    $('#trainerBtn').classList.toggle('on', isTrainer());
+    $('#trainerBtn').innerHTML = isTrainer() ? '🧑‍🏫 <span>Trainer</span>' : '🧑‍🏫';
+    $('#trainerBtn').title = isTrainer() ? 'Trainer dashboard' : 'Trainer login';
   }
   function updateEditBar() {
     $('#editbar').hidden = !editMode;
@@ -305,6 +351,7 @@
     const parts = location.hash.replace(/^#\/?/, '').split('/');
     const page = ['glossary', 'progress', 'arcade', 'who'].includes(parts[0]) ? parts[0] : '';
     document.querySelectorAll('.topnav a').forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#/' + page));
+    if (parts[0] === 'trainer') return renderTrainer(parts[1] ? decodeURIComponent(parts[1]) : null);
     if (!me() || parts[0] === 'who') return renderWho();
     if (parts[0] === 'c') {
       const ch = course.chapters.find((c) => c.id === parts[1]);
@@ -1308,6 +1355,114 @@
       createProfile(name); toast(`Welcome, ${name}! 🎉`, 2200); confetti(80); location.hash = '#/';
     });
   }
+  // ---------- TRAINER DASHBOARD ----------
+  const ago = (t) => {
+    if (!t) return '—';
+    const s = (Date.now() - new Date(t).getTime()) / 1000;
+    if (s < 90) return 'just now';
+    if (s < 3600) return `${Math.round(s / 60)} min ago`;
+    if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+    const d = Math.round(s / 86400); return d === 1 ? 'yesterday' : `${d} days ago`;
+  };
+  const daysSince = (t) => (t ? (Date.now() - new Date(t).getTime()) / 86400000 : Infinity);
+  const ratio = (v) => { const m = String(v || '').match(/(\d+)\s*\/\s*(\d+)/); return m ? (+m[2] ? +m[1] / +m[2] : 0) : -1; };
+  const pctOf = (v) => (v === '' || v == null ? null : Math.round(Number(v) * 100));
+  const T_STD = ['Trainee ID', 'Name', 'Avatar', 'Last update', 'Overall %', 'XP', 'Level', 'Terms learned', 'Quizzes passed', 'Mini-games', 'Labs done', 'Tests submitted', 'Progress per chapter', 'Progress JSON'];
+  const TR_COLS = [
+    { k: 'name', h: 'Trainee', v: (r) => String(r.Name || '').toLowerCase() },
+    { k: 'last', h: 'Last active', v: (r) => new Date(r['Last update'] || 0).getTime() },
+    { k: 'overall', h: 'Overall', v: (r) => Number(r['Overall %'] || 0) },
+    { k: 'xp', h: 'XP', v: (r) => Number(r.XP || 0) },
+    { k: 'terms', h: 'Terms', v: (r) => ratio(r['Terms learned']) },
+    { k: 'quizzes', h: 'Quizzes', v: (r) => ratio(r['Quizzes passed']) },
+    { k: 'games', h: 'Games', v: (r) => ratio(r['Mini-games']) },
+    { k: 'labs', h: 'Labs', v: (r) => ratio(r['Labs done']) },
+    { k: 'tests', h: 'Tests', v: (r) => (r['Tests submitted'] && r['Tests submitted'] !== '—' ? String(r['Tests submitted']).split(',').length : 0) },
+  ];
+  const trTests = (r) => (r['Tests submitted'] && r['Tests submitted'] !== '—' ? String(r['Tests submitted']).split(',').length : 0);
+  function trainerLogin_screen() {
+    return `<div class="trainer-page"><div class="placeholder lockbox"><div class="trophy">🧑‍🏫</div><h2>Trainer dashboard</h2>
+      <p>See every trainee's progress and test answers, live from the progress sheet. Trainers only.</p>
+      <form class="lock-form" id="trainerForm" autocomplete="off"><input type="password" id="trainerPw" class="search" placeholder="Trainer password" aria-label="Trainer password" autocomplete="off">
+      <button class="btn" style="--c:#9966FF" type="submit">🔓 Enter</button></form><p class="err" id="trErr">${esc(TR.err)}</p>
+      <p class="muted small">Trainees: this page isn't for you. Head back to the <a href="#/">map</a>.</p></div></div>`;
+  }
+  function renderTrainer(selId) {
+    cur = null;
+    if (!SYNC.url) { app.innerHTML = '<div class="placeholder"><div class="trophy">🧑‍🏫</div><h2>No progress sheet connected</h2><p>Set the sheet URL in <code>js/sync-config.js</code> to use the trainer dashboard (see the README).</p></div>'; return; }
+    if (!isTrainer()) { app.innerHTML = trainerLogin_screen(); setTimeout(() => { const i = $('#trainerPw'); if (i) i.focus(); }, 30); return; }
+    if (!TR.data && !TR.loading && !TR.err) { trainerLoad(); return; }
+    const head = `<div class="tr-head"><div><h1>🧑‍🏫 Trainer dashboard</h1><p class="lead">${TR.data ? `Live from the progress sheet · loaded ${esc(new Date(TR.data.at).toLocaleTimeString())}` : 'Loading the progress sheet…'}</p></div>
+      <div class="row"><button class="btn sm" style="--c:#5CB1D6" data-act="trRefresh" ${TR.loading ? 'disabled' : ''}>${TR.loading ? '⏳ Loading…' : '↻ Refresh'}</button>
+      <button class="btn sm ghost" data-act="trLock">🔒 Lock trainer mode</button></div></div>
+      ${TR.err ? `<p class="err tr-err">${esc(TR.err)}</p>` : ''}`;
+    if (!TR.data) { app.innerHTML = `<div class="trainer-page">${head}<div class="placeholder"><div class="trophy">⏳</div></div></div>`; return; }
+    const list = TR.data.trainees || [];
+    if (selId) {
+      const r = list.find((x) => String(x['Trainee ID']) === selId);
+      app.innerHTML = `<div class="trainer-page">${head}${r ? trainerDetail(r) : '<div class="empty">That trainee isn\'t in the sheet. <a href="#/trainer">Back to all trainees</a></div>'}</div>`;
+      return;
+    }
+    const col = TR_COLS.find((c) => c.k === TR.sort) || TR_COLS[1];
+    const sorted = list.slice().sort((a, b) => { const x = col.v(a); const y = col.v(b); return (x < y ? -1 : x > y ? 1 : 0) * TR.dir; });
+    const answers = TR.data.answers || [];
+    const toReview = answers.filter((a) => /^Submitted/.test(String(a.Status || ''))).length;
+    const active = list.filter((r) => daysSince(r['Last update']) <= 7).length;
+    const avg = list.length ? Math.round(list.reduce((n, r) => n + Number(r['Overall %'] || 0), 0) / list.length * 100) : 0;
+    const cell = (v) => esc(String(v == null || v === '' ? '—' : v));
+    const rows = sorted.map((r) => {
+      const pct = pctOf(r['Overall %']) || 0; const d = daysSince(r['Last update']);
+      const id = encodeURIComponent(String(r['Trainee ID']));
+      return `<tr class="tr-row" data-act="trOpen" data-id="${esc(id)}" data-name="${esc(String(r.Name || '').toLowerCase())}" tabindex="0">
+        <td><span class="tr-name"><span class="tr-av">${esc(String(r.Avatar || '🙂'))}</span><b>${esc(String(r.Name || '?'))}</b></span></td>
+        <td class="${d > 7 ? 'tr-stale' : d > 3 ? 'tr-warn' : ''}" title="${esc(r['Last update'] ? new Date(r['Last update']).toLocaleString() : '')}">${ago(r['Last update'])}</td>
+        <td class="p-bar" style="--c:#4C97FF"><div class="bar"><i style="width:${pct}%"></i></div><b>${pct}%</b></td>
+        <td>${cell(r.XP)}</td><td>${cell(r['Terms learned'])}</td><td>${cell(r['Quizzes passed'])}</td><td>${cell(r['Mini-games'])}</td><td>${cell(r['Labs done'])}</td>
+        <td>${trTests(r) ? `📝 ${trTests(r)}` : '—'}</td></tr>`;
+    }).join('');
+    const th = TR_COLS.map((c) => `<th><button class="th-sort ${c.k === TR.sort ? 'on' : ''}" data-act="trSort" data-k="${c.k}">${c.h}${c.k === TR.sort ? (TR.dir > 0 ? ' ▲' : ' ▼') : ''}</button></th>`).join('');
+    app.innerHTML = `<div class="trainer-page">${head}
+      <div class="stats five">
+        <div class="stat" style="--c:#4C97FF"><b>${list.length}</b><span>trainees</span></div>
+        <div class="stat" style="--c:#59C059"><b>${active}</b><span>active this week</span></div>
+        <div class="stat" style="--c:#FFAB19"><b>${avg}%</b><span>average progress</span></div>
+        <div class="stat" style="--c:#9966FF"><b>${answers.length}</b><span>tests started</span></div>
+        <div class="stat" style="--c:#FF6680"><b>${toReview}</b><span>tests submitted</span></div>
+      </div>
+      ${list.length ? `<div class="row tr-tools"><input class="search" id="trSearch" placeholder="🔎 Filter by name…" autocomplete="off"><span class="muted small">Click a trainee for their chapters and test answers.</span></div>
+      <div class="p-table-wrap"><table class="p-table tr-table"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table></div>`
+        : '<div class="empty">No trainees yet. They appear here as soon as they make progress on the site.</div>'}</div>`;
+  }
+  function trainerDetail(r) {
+    const pct = pctOf(r['Overall %']) || 0;
+    const chapters = String(r['Progress per chapter'] || '').split('\n').filter(Boolean).map((line) => {
+      const m = line.match(/^(.*):\s*(\d+)%\s*$/); const name = m ? m[1] : line; const p = m ? +m[2] : 0;
+      const ch = course.chapters.find((c) => name.replace(/^\d+\.\s*/, '') === c.title);
+      return `<div class="tr-ch" style="--c:${esc(ch ? ch.color : '#4C97FF')}"><span>${ch ? esc(ch.icon) + ' ' : ''}${esc(name)}</span><div class="bar"><i style="width:${p}%"></i></div><b>${p}%</b></div>`;
+    }).join('');
+    const extra = Object.keys(r).filter((k) => !T_STD.includes(k) && r[k] !== '' && r[k] != null)
+      .map((k) => `<div><span class="muted small">${esc(k)}</span><b>${esc(String(r[k]))}</b></div>`).join('');
+    const ans = (TR.data.answers || []).filter((a) => String(a['Trainee ID']) === String(r['Trainee ID'])).map((a) => {
+      const sub = /^Submitted/.test(String(a.Status || ''));
+      return `<details class="tr-ans" ${sub ? 'open' : ''}><summary><b>${esc(String(a.Chapter || ''))}</b>
+        <span class="chip ${sub ? 'ok' : ''}">${sub ? '✅ ' : '✍️ '}${esc(String(a.Status || ''))}</span><span class="muted small">${esc(String(a.Answered || ''))} answered · updated ${ago(a['Last update'])}</span></summary>
+        <pre class="tr-pre" dir="auto">${esc(String(a['Questions & answers'] || ''))}</pre></details>`;
+    }).join('');
+    return `<p><a href="#/trainer" class="btn sm ghost">← All trainees</a></p>
+      <div class="p-head"><span class="who-av big">${esc(String(r.Avatar || '🙂'))}</span>
+        <div><h1>${esc(String(r.Name || '?'))}</h1><p class="lead">${esc(String(r.Level || ''))} · ⭐ ${esc(String(r.XP || 0))} XP · Last active ${ago(r['Last update'])}${r['Last update'] ? ` (${esc(new Date(r['Last update']).toLocaleString())})` : ''}</p></div></div>
+      <div class="stats five">
+        <div class="stat" style="--c:#4C97FF"><b>${pct}%</b><span>overall</span></div>
+        <div class="stat" style="--c:#59C059"><b>${esc(String(r['Terms learned'] || '—'))}</b><span>terms learned</span></div>
+        <div class="stat" style="--c:#FFAB19"><b>${esc(String(r['Quizzes passed'] || '—'))}</b><span>quizzes passed</span></div>
+        <div class="stat" style="--c:#9966FF"><b>${esc(String(r['Mini-games'] || '—'))}</b><span>mini-games</span></div>
+        <div class="stat" style="--c:#FF6680"><b>${esc(String(r['Labs done'] || '—'))}</b><span>labs done</span></div>
+      </div>
+      ${extra ? `<div class="tr-extra">${extra}</div>` : ''}
+      <div class="tr-cols"><section class="tr-box"><h2>📊 Chapters</h2>${chapters || '<p class="muted">No chapter data yet.</p>'}</section>
+      <section class="tr-box"><h2>📝 Test answers</h2>${ans || '<p class="muted">No written test answers yet.</p>'}</section></div>`;
+  }
+
   function renderProgress() {
     cur = null;
     const p = me(); const li = levelInfo();
@@ -1586,11 +1741,24 @@
         saveProfiles(); renderTopbar(); rerender(); break;
       }
       case 'progExport': exportProgress(); toast('⬇ Progress file downloaded'); break;
+      case 'trRefresh': trainerLoad(); break;
+      case 'trLock': trainerLogout(); location.hash = '#/'; break;
+      case 'trSort': if (TR.sort === k) TR.dir = -TR.dir; else { TR.sort = k; TR.dir = k === 'name' ? 1 : -1; } rerender(); break;
+      case 'trOpen': location.hash = '#/trainer/' + el.dataset.id; break;
       case 'progImport': $('#progFile').click(); break;
       default: if (editMode) editAction(act, el);
     }
   });
   app.addEventListener('submit', (e) => {
+    if (e.target.id === 'trainerForm') {
+      e.preventDefault();
+      const pw = $('#trainerPw').value; const err = $('#trErr'); const btn = e.target.querySelector('button');
+      if (!pw) return;
+      btn.disabled = true; btn.textContent = '⏳ Checking…'; err.textContent = '';
+      trainerFetch(pw).then((d) => { trainerLogin(pw, d); toast('🧑‍🏫 Welcome, trainer!', 2000); rerender(); })
+        .catch((ex) => { btn.disabled = false; btn.textContent = '🔓 Enter'; err.textContent = trErr(ex); beep(false); $('#trainerPw').select(); });
+      return;
+    }
     if (e.target.id !== 'unlockForm') return;
     e.preventDefault();
     const pw = $('#testPw').value; const err = $('#pwErr'); const btn = e.target.querySelector('button');
@@ -1602,6 +1770,7 @@
   app.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     const t = e.target; const k = t.dataset.k;
+    if (t.classList.contains('tr-row')) { location.hash = '#/trainer/' + t.dataset.id; return; }
     if (t.classList.contains('term-in')) { e.preventDefault(); termSubmit(k, t.value); }
     else if (t.classList.contains('fill-in')) { e.preventDefault(); fillSubmit(k, t.value); }
     else if (t.classList.contains('pp-in')) { e.preventDefault(); ppGuess(k, t.value); }
@@ -1612,6 +1781,11 @@
   let wtTimer;
   app.addEventListener('input', (e) => {
     const t = e.target;
+    if (t.id === 'trSearch') {
+      const q = t.value.trim().toLowerCase();
+      app.querySelectorAll('.tr-row').forEach((row) => { row.hidden = !!q && !row.dataset.name.includes(q); });
+      return;
+    }
     if (t.dataset.wt) {
       const [chId, i, k] = t.dataset.wt.split('|'); const c = course.chapters.find((x) => x.id === chId); if (!c || !me()) return;
       wtState(c).answers[`${i}|${k}`] = t.value; clearTimeout(wtTimer); wtTimer = setTimeout(saveP, 400);
@@ -1756,6 +1930,7 @@
 
   // ---------- global controls ----------
   function toggleEdit() {
+    if (!editMode && !canEdit()) { location.hash = '#/trainer'; return; }
     const d = cur && cur.steps[cur.stepIdx];
     editMode = !editMode; document.body.classList.toggle('editing', editMode);
     ui.runs = {}; renderTopbar(); updateEditBar();
@@ -1767,6 +1942,7 @@
     rerender();
   }
   $('#editBtn').addEventListener('click', toggleEdit);
+  $('#trainerBtn').addEventListener('click', () => { location.hash = '#/trainer'; });
   $('#exitEdit').addEventListener('click', toggleEdit);
   $('#soundBtn').addEventListener('click', () => { P.sound = !P.sound; saveP(); renderTopbar(); beep(true); });
   $('#exportBtn').addEventListener('click', () => {
