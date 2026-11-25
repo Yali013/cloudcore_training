@@ -86,9 +86,56 @@
     }
     return out;
   }
+
+  // ---------- trainer progress sheet (Google Sheets, see sync/Code.gs) ----------
+  const SYNC = window.CCA_SYNC || {};
+  const syncOn = () => !!(SYNC.url && me());
+  let syncTimer = null; let syncPending = false;
+  function progressSummary() {
+    let terms = 0; let termsAll = 0; let qz = 0; let qzAll = 0; let games = 0; let gamesAll = 0; let labs = 0; let labsAll = 0;
+    const per = []; const tests = [];
+    course.chapters.forEach((ch) => {
+      ch.sections.forEach((sec, si) => {
+        termsAll += sec.terms.length; terms += sec.terms.filter((_, ti) => P.flip[`${ch.id}|${si}|${ti}`]).length;
+        if ((sec.quiz || []).length) { qzAll++; if ((P.quiz[`${ch.id}|${si}`] || 0) >= 60) qz++; }
+      });
+      (ch.activities || []).forEach((_, ai) => { gamesAll++; if (P.act[`${ch.id}|act|${ai}`]) games++; });
+      (ch.labs || []).forEach((_, li) => { labsAll++; if (P.lab[`${ch.id}|${li}`]) labs++; });
+      if ((P.written[ch.id] || {}).submitted) tests.push(ch.title);
+      per.push(`${ch.num}. ${ch.title}: ${chapterPct(ch)}%`);
+    });
+    const li = levelInfo();
+    return { overall: overallPct(), xp: P.xp, level: `${li.lvl} · ${li.title}`, terms: `${terms}/${termsAll}`, quizzes: `${qz}/${qzAll}`,
+      games: `${games}/${gamesAll}`, labs: `${labs}/${labsAll}`, tests: tests.join(', ') || '—', chapters: per.join('\n') };
+  }
+  function syncPayload() {
+    const p = me();
+    // written answers go along with their questions, for chapters whose tests are unlocked in this session
+    const written = course.chapters.filter((ch) => writtenOf(ch).length && P.written[ch.id]).map((ch) => ({ ch, c: wtCount(ch) }))
+      .filter(({ c }) => c.done || c.submitted)
+      .map(({ ch, c }) => ({ chapter: `${ch.num}. ${ch.title}`, status: c.submitted ? `Submitted ${new Date(c.submitted).toLocaleString()}` : 'In progress',
+        answered: `${c.done}/${c.total}`, text: writtenText(ch) }));
+    return JSON.stringify({ key: SYNC.key, profile: { id: p.id, name: p.name, avatar: avatar(p), created: p.created }, summary: progressSummary(), progress: P, written });
+  }
+  function syncNow(beacon) {
+    clearTimeout(syncTimer); syncTimer = null;
+    if (!syncOn()) return;
+    syncPending = false;
+    const body = syncPayload();
+    if (beacon && navigator.sendBeacon) { navigator.sendBeacon(SYNC.url, new Blob([body], { type: 'text/plain;charset=utf-8' })); return; }
+    // text/plain keeps this a "simple" request (no CORS preflight), which Apps Script web apps accept
+    fetch(SYNC.url, { method: 'POST', body, headers: { 'Content-Type': 'text/plain;charset=utf-8' } })
+      .catch(() => fetch(SYNC.url, { method: 'POST', body, mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' } }))
+      .catch(() => { syncPending = true; }); // offline: try again with the next save
+  }
+  function scheduleSync() {
+    if (!syncOn()) return;
+    syncPending = true; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 8000);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && syncPending) syncNow(true); });
   const saveP = () => {
     const p = me(); if (!p) return;
-    store.set(progKey(p.id), P); p.last = Date.now(); saveProfiles();
+    store.set(progKey(p.id), P); p.last = Date.now(); saveProfiles(); scheduleSync();
   };
   function selectProfile(id) {
     profiles.current = id; saveProfiles(); P = loadProgress(id); resetUi(); renderTopbar();
@@ -1249,7 +1296,7 @@
       </div>`;
     }).join('');
     app.innerHTML = `<div class="who">
-      <div class="g-head">${MASCOT}<div><h1>👋 Who's learning?</h1><p class="lead">Pick your name to continue, or add yourself. Progress is tracked per trainee in this browser. No password needed.</p></div></div>
+      <div class="g-head">${MASCOT}<div><h1>👋 Who's learning?</h1><p class="lead">Pick your name to continue, or add yourself. Progress is tracked per trainee in this browser. No password needed.${SYNC.url ? ' Your progress is shared with your trainers.' : ''}</p></div></div>
       <form class="who-new" id="whoForm"><input id="whoName" class="search" maxlength="40" placeholder="Your full name" autocomplete="off" dir="auto" required>
         <button class="btn big" style="--c:#59C059" type="submit">+ Start as new trainee</button></form>
       ${cards ? `<h2>Trainees on this computer</h2><div class="who-grid">${cards}</div>` : ''}
@@ -1296,7 +1343,7 @@
         <div class="stat" style="--c:#FF6680"><b>${lDone}/${lAll}</b><span>labs done</span></div>
       </div>
       <div class="p-table-wrap"><table class="p-table"><thead><tr><th>Chapter</th><th>Progress</th><th>Terms</th><th>Quizzes</th><th>Games</th><th>Labs</th><th>Test</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <p class="hint small">Want to show your trainer? Export your progress and send them the file. They can import it on their computer to see it.</p>
+      <p class="hint small">${SYNC.url ? '☁️ Your progress is shared with your trainers automatically. ' : ''}Using another computer? Export your progress and import it there.</p>
     </div>`;
   }
   function exportProgress() {
@@ -1514,7 +1561,8 @@
         if (cnt.done < cnt.total && !confirm(`You answered ${cnt.done} of ${cnt.total}. Submit anyway?`)) break;
         const W = wtState(c); const first = !W.submitted; W.submitted = Date.now(); saveP();
         if (first) { addXP(100); confetti(150); }
-        toast('📝 Test submitted! Send your answers to your trainer.', 3000); rerender(); break;
+        syncNow();
+        toast(SYNC.url ? '📝 Test submitted! Your trainers can see your answers.' : '📝 Test submitted! Send your answers to your trainer.', 3000); rerender(); break;
       }
       case 'wtDownload': {
         const c = course.chapters.find((x) => x.id === k); const p = me();

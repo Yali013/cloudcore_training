@@ -26,6 +26,20 @@ Every chapter has a **📋 All terms** page listing the whole chapter on one scr
 - **📈 My progress** shows a per-chapter report.
 - Progress is stored in the browser (localStorage). To move it to another computer, or to send it to a trainer, use **Export my progress**. The trainer can **Import** the file to see the trainee on the "Who's learning?" page.
 
+### Trainer progress sheet (Google Sheets)
+
+When `js/sync-config.js` has a URL, the site sends each trainee's progress to a Google Sheet automatically. It sends about 8 seconds after any change, and right away when a test is submitted or the tab is closed. The sheet gets:
+- **Trainees**: one row per trainee: name, last update, overall %, XP/level, terms, quizzes, mini-games, labs, tests submitted, % per chapter, and the full progress JSON.
+- **Test answers**: one row per trainee per chapter test, with each question and the trainee's answer.
+
+One-time setup:
+1. Create a new Google Sheet (e.g. "CloudCore Academy – Progress").
+2. **Extensions → Apps Script**. Delete the sample code, paste in all of [`sync/Code.gs`](sync/Code.gs), and save.
+3. **Deploy → New deployment →** gear icon **→ Web app**. Set *Execute as*: **Me**, and *Who has access*: **Anyone**. Click **Deploy** and approve the permissions.
+4. Copy the **Web app URL** (it ends with `/exec`), put it in `url` in `js/sync-config.js`, then commit and push.
+
+The URL and key are visible in the site's code, so anyone technical could send fake rows. That's fine for training progress, but don't put sensitive data in the sheet. If you ever change `SHARED_KEY` in `Code.gs`, change `key` in `js/sync-config.js` to match. After editing `Code.gs`, redeploy with **Deploy → Manage deployments → Edit → New version**.
+
 ## Run it locally
 
 Open `index.html` in a browser, or serve the folder:
