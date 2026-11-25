@@ -23,7 +23,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check content.js parses
         run: node -e "global.window={}; require('./js/content.js'); if(!window.COURSE||!window.COURSE.chapters.length) process.exit(1); console.log(window.COURSE.chapters.length + ' chapters OK')"
@@ -38,7 +38,7 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
